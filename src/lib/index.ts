@@ -1,1 +1,4 @@
-// place files you want to import through the `$lib` alias in this folder.
+import Image from './components/Image.svelte';
+
+export { Image };
+export { signIn, signUp, signOut, useSession } from './auth-client';

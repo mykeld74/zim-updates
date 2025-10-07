@@ -1,0 +1,398 @@
+/* Global Styles - Light & Dark Mode Support */
+
+:root {
+	/* Light mode colors - Modern Ocean Blue Scheme */
+	--primaryColor: oklch(0.55 0.18 240);
+	--secondaryColor: oklch(0.6 0.15 220);
+	--accentColor: oklch(0.65 0.16 200);
+	--contrastColor: oklch(0.99 0 0);
+	--backgroundColor: oklch(0.98 0.005 240);
+	--surfaceColor: oklch(0.96 0.01 240);
+	--textColor: oklch(0.2 0.02 240);
+	--textMuted: oklch(0.5 0.03 240);
+	--borderColor: oklch(0.88 0.01 240);
+	--errorColor: oklch(0.55 0.22 25);
+	--successColor: oklch(0.65 0.18 155);
+	--warningColor: oklch(0.7 0.18 75);
+
+	/* Spacing */
+	--spacing-xs: 0.25rem;
+	--spacing-sm: 0.5rem;
+	--spacing-md: 1rem;
+	--spacing-lg: 1.5rem;
+	--spacing-xl: 2rem;
+	--spacing-2xl: 3rem;
+
+	/* Border radius */
+	--radius-sm: 4px;
+	--radius-md: 8px;
+	--radius-lg: 12px;
+	--radius-xl: 16px;
+
+	/* Transitions */
+	--transition-fast: 150ms ease;
+	--transition-base: 250ms ease;
+	--transition-slow: 350ms ease;
+
+	/* Shadows */
+	--shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.05);
+	--shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.1);
+	--shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.1);
+}
+
+/* Dark mode - Deep Ocean & Sky Blue */
+@media (prefers-color-scheme: dark) {
+	:root {
+		--primaryColor: oklch(0.65 0.2 240);
+		--secondaryColor: oklch(0.68 0.18 220);
+		--accentColor: oklch(0.72 0.18 200);
+		--contrastColor: oklch(0.12 0.02 240);
+		--backgroundColor: oklch(0.15 0.03 240);
+		--surfaceColor: oklch(0.2 0.04 240);
+		--textColor: oklch(0.95 0.01 240);
+		--textMuted: oklch(0.7 0.03 240);
+		--borderColor: oklch(0.3 0.04 240);
+		--errorColor: oklch(0.68 0.2 30);
+		--successColor: oklch(0.72 0.16 160);
+		--warningColor: oklch(0.75 0.16 80);
+
+		--shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.3);
+		--shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.4);
+		--shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.5);
+	}
+}
+
+/* Base reset and defaults */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	font-size: 16px;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+body {
+	font-family:
+		-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
+		'Helvetica Neue', sans-serif;
+	line-height: 1.6;
+	color: var(--textColor);
+	background-color: var(--backgroundColor);
+	min-height: 100vh;
+	transition:
+		background-color var(--transition-base),
+		color var(--transition-base);
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-weight: 600;
+	line-height: 1.2;
+	margin-bottom: var(--spacing-md);
+	color: var(--textColor);
+}
+
+h1 {
+	font-size: clamp(2rem, 5vw, 3rem);
+}
+
+h2 {
+	font-size: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+h3 {
+	font-size: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+p {
+	margin-bottom: var(--spacing-md);
+}
+
+a {
+	color: var(--primaryColor);
+	text-decoration: none;
+	transition: opacity var(--transition-fast);
+}
+
+a:hover {
+	opacity: 0.8;
+}
+
+a:focus-visible {
+	outline: 2px solid var(--primaryColor);
+	outline-offset: 2px;
+}
+
+/* Layout containers */
+.container {
+	width: 100%;
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 0 var(--spacing-md);
+}
+
+.pageWrapper {
+	padding: var(--spacing-xl) var(--spacing-md);
+	max-width: 1400px;
+	margin: 0 auto;
+}
+
+/* Common utilities */
+.visuallyHidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+.textCenter {
+	text-align: center;
+}
+
+.textMuted {
+	color: var(--textMuted);
+}
+
+/* Focus styles */
+:focus-visible {
+	outline: 2px solid var(--primaryColor);
+	outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+	background-color: var(--primaryColor);
+	color: var(--contrastColor);
+}
+
+/* Buttons */
+button {
+	font-family: inherit;
+	font-size: 1rem;
+	cursor: pointer;
+	border: none;
+	background: none;
+	transition: all var(--transition-fast);
+}
+
+button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.button,
+.btnPrimary {
+	display: inline-block;
+	padding: var(--spacing-sm) var(--spacing-lg);
+	background-color: var(--primaryColor);
+	color: var(--contrastColor);
+	border-radius: var(--radius-md);
+	font-weight: 500;
+	text-align: center;
+	transition: all var(--transition-fast);
+	box-shadow: var(--shadow-sm);
+	border: none;
+	cursor: pointer;
+}
+
+.button:hover,
+.btnPrimary:hover {
+	opacity: 0.9;
+	transform: translateY(-1px);
+	box-shadow: var(--shadow-md);
+}
+
+.btnSecondary {
+	background-color: var(--secondaryColor);
+	color: var(--contrastColor);
+}
+
+.btnAccent {
+	background-color: var(--accentColor);
+	color: var(--contrastColor);
+}
+
+/* Forms */
+input,
+textarea,
+select {
+	font-family: inherit;
+	font-size: 1rem;
+	color: var(--textColor);
+	background-color: var(--surfaceColor);
+	border: 1px solid var(--borderColor);
+	border-radius: var(--radius-md);
+	padding: var(--spacing-sm) var(--spacing-md);
+	transition:
+		border-color var(--transition-fast),
+		box-shadow var(--transition-fast);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+	outline: none;
+	border-color: var(--primaryColor);
+	box-shadow: 0 0 0 3px oklch(from var(--primaryColor) l c h / 0.1);
+}
+
+/* Images */
+img {
+	max-width: 100%;
+	height: auto;
+	display: block;
+}
+
+/* Card pattern */
+.card {
+	background-color: var(--surfaceColor);
+	border-radius: var(--radius-lg);
+	padding: var(--spacing-lg);
+	box-shadow: var(--shadow-sm);
+	border: 1px solid var(--borderColor);
+	transition:
+		box-shadow var(--transition-base),
+		transform var(--transition-base),
+		border-color var(--transition-base);
+}
+
+.card:hover {
+	box-shadow: var(--shadow-md);
+	transform: translateY(-2px);
+	border-color: var(--primaryColor);
+}
+
+.cardPrimary {
+	background: linear-gradient(135deg, var(--primaryColor) 0%, var(--secondaryColor) 100%);
+	color: var(--contrastColor);
+}
+
+.cardAccent {
+	border-left: 4px solid var(--accentColor);
+}
+
+/* Grid layouts */
+.grid {
+	display: grid;
+	gap: var(--spacing-lg);
+}
+
+.gridAuto {
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+/* Flex utilities */
+.flex {
+	display: flex;
+}
+
+.flexColumn {
+	flex-direction: column;
+}
+
+.flexCenter {
+	justify-content: center;
+	align-items: center;
+}
+
+.gap-sm {
+	gap: var(--spacing-sm);
+}
+
+.gap-md {
+	gap: var(--spacing-md);
+}
+
+.gap-lg {
+	gap: var(--spacing-lg);
+}
+
+/* Loading states */
+.loading {
+	color: var(--textMuted);
+	font-style: italic;
+}
+
+/* Error states */
+.error {
+	color: var(--errorColor);
+	font-size: 0.875rem;
+}
+
+/* Success states */
+.success {
+	color: var(--successColor);
+	font-size: 0.875rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes slideUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes cardsIn {
+	from {
+		opacity: 0;
+		transform: translateY(30px) scale(0.95);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+.fadeIn {
+	animation: fadeIn var(--transition-base);
+}
+
+.slideUp {
+	animation: slideUp var(--transition-base);
+}
+
+.cardsIn {
+	animation: cardsIn var(--transition-slow);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	:root {
+		--spacing-xl: 1.5rem;
+		--spacing-2xl: 2rem;
+	}
+
+	.pageWrapper {
+		padding: var(--spacing-lg) var(--spacing-sm);
+	}
+}

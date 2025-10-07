@@ -1,2 +1,15 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+</script>
+
+<div class="pageWrapper">
+	<section class="hero" aria-label="Welcome">
+		<h1>Welcome to Zim Updates</h1>
+	</section>
+</div>
+
+<style>
+	.hero {
+		text-align: center;
+		padding: var(--spacing-2xl) 0;
+	}
+</style>
