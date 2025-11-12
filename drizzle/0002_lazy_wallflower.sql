@@ -1,0 +1,1 @@
+ALTER TABLE "sponsor" ADD COLUMN "sponsorshipType" text DEFAULT 'individual' NOT NULL;

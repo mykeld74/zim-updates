@@ -1,6 +1,6 @@
 <script lang="ts">
 	import CloudinaryUpload from '$lib/components/CloudinaryUpload.svelte';
-	import { Image } from '$lib';
+	import { AdminImage } from '$lib';
 
 	let uploadedImages = $state<Array<{ publicId: string; url: string }>>([]);
 	let existingImages = $state<
@@ -43,7 +43,7 @@
 			<div class="grid">
 				{#each uploadedImages as img (img.publicId)}
 					<div class="imageCard">
-						<Image source={img.publicId} altTag="Image from zim-admin" width="400" />
+						<AdminImage source={img.publicId} altTag="Image from zim-admin" width="400" />
 						<p class="publicId">{img.publicId}</p>
 					</div>
 				{/each}
@@ -60,7 +60,7 @@
 				{#each existingImages as img (img.publicId)}
 					<div class="imageCard">
 						<div class="imageContainer">
-							<Image source={img.publicId} altTag="Image from zim-admin" width="200" />
+							<AdminImage source={img.publicId} altTag="Image from zim-admin" width="200" />
 						</div>
 						<p class="publicId">{img.publicId}</p>
 					</div>

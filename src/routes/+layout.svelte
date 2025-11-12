@@ -3,11 +3,27 @@
 	import '$lib/css/reset.css';
 	import '$lib/css/styles.css';
 
-	let { children } = $props();
+	let { children, data } = $props();
 </script>
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-{@render children?.()}
+<div class="appLayout">
+	<main class="mainContent">
+		{@render children?.()}
+	</main>
+</div>
+
+<style>
+	.appLayout {
+		display: flex;
+		min-height: 100vh;
+	}
+
+	.mainContent {
+		flex: 1;
+		overflow-y: auto;
+	}
+</style>

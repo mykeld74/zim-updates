@@ -8,6 +8,20 @@
       "when": 1759843000479,
       "tag": "0000_mysterious_madame_hydra",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1760372235450,
+      "tag": "0001_tiresome_satana",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760982991326,
+      "tag": "0002_lazy_wallflower",
+      "breakpoints": true
     }
   ]
 }
