@@ -2,6 +2,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import '$lib/css/reset.css';
 	import '$lib/css/styles.css';
+	import { Nav } from '$lib';
 
 	let { children, data } = $props();
 </script>
@@ -11,6 +12,7 @@
 </svelte:head>
 
 <div class="appLayout">
+	<Nav />
 	<main class="mainContent">
 		{@render children?.()}
 	</main>
@@ -19,6 +21,7 @@
 <style>
 	.appLayout {
 		display: flex;
+		flex-direction: column;
 		min-height: 100vh;
 	}
 

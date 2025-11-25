@@ -227,6 +227,7 @@
 		text-shadow: 2px 2px 6px #000;
 		margin: 0 0 0.5em 0;
 		line-height: 1;
+		color: #fff;
 	}
 	.subhead {
 		font-size: 0.75em;

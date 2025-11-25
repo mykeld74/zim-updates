@@ -72,7 +72,7 @@
 <style>
 	.updatesContainer {
 		max-width: 1200px;
-		margin: 0 auto;
+		margin: 110px auto;
 		padding: var(--spacing-2xl) var(--spacing-lg);
 		animation: cardsIn var(--transition-base);
 	}
