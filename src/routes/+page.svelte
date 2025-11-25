@@ -117,6 +117,11 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Zim Updates</title>
+	<meta name="description" content="Stay connected with our friends in Zimbabwe." />
+</svelte:head>
+
 <div class="fullScreen">
 	<section class="hero" aria-label="Welcome">
 		<div class="hero">
