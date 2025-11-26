@@ -18,6 +18,7 @@ declare global {
 				updatedAt: Date;
 				email: string;
 				emailVerified: boolean;
+				approved: boolean;
 				name: string;
 				image?: string | null;
 			} | null;

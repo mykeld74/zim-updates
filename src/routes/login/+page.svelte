@@ -1,14 +1,25 @@
 <script lang="ts">
 	import { signIn } from '$lib/auth-client';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	let email = $state('');
 	let password = $state('');
 	let error = $state('');
 	let loading = $state(false);
+	let pendingMessage = $state('');
+
+	onMount(() => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const message = urlParams.get('message');
+		if (message === 'pending') {
+			pendingMessage = 'Your account is pending approval. Please wait for an admin to approve your access.';
+		}
+	});
 
 	async function handleLogin() {
 		error = '';
+		pendingMessage = '';
 		loading = true;
 
 		try {
@@ -20,6 +31,8 @@
 			if (result.error) {
 				error = result.error.message || 'Login failed';
 			} else {
+				// Check approval status by attempting to access admin
+				// The hooks will redirect if not approved
 				goto('/admin');
 			}
 		} catch (err) {
@@ -64,6 +77,10 @@
 					disabled={loading}
 				/>
 			</div>
+
+			{#if pendingMessage}
+				<div class="pending" role="alert">{pendingMessage}</div>
+			{/if}
 
 			{#if error}
 				<div class="error" role="alert">{error}</div>
@@ -173,6 +190,15 @@
 		border-radius: var(--radius-md);
 		margin-bottom: var(--spacing-lg);
 		border: 1px solid oklch(0.8 0.08 20);
+	}
+
+	.pending {
+		background: oklch(0.95 0.1 100);
+		color: oklch(0.4 0.15 100);
+		padding: var(--spacing-md);
+		border-radius: var(--radius-md);
+		margin-bottom: var(--spacing-lg);
+		border: 1px solid oklch(0.8 0.1 100);
 	}
 
 	.signupLink {

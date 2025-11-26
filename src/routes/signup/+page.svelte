@@ -34,7 +34,8 @@
 			if (result.error) {
 				error = result.error.message || 'Signup failed';
 			} else {
-				goto('/admin');
+				// Redirect to login with pending message
+				goto('/login?message=pending');
 			}
 		} catch (err) {
 			error = 'An unexpected error occurred';

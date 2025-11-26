@@ -2,17 +2,11 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import gsap from 'gsap';
-	import { useSession, signOut } from '$lib';
-	import { goto } from '$app/navigation';
+	import { useSession } from '$lib';
 
 	const currentPath = $derived($page.url.pathname);
 	const session = useSession();
 	const isLoggedIn = $derived(!!$session?.data?.user);
-
-	async function handleLogout() {
-		await signOut();
-		goto('/');
-	}
 
 	onMount(() => {
 		gsap.from('.navItem', {
@@ -36,24 +30,6 @@
 		{#if isLoggedIn}
 			<li class="navItem">
 				<a href="/admin" class="navLink" class:active={currentPath === '/admin'}> Admin </a>
-			</li>
-			<li class="navItem">
-				<a href="/admin/kids" class="navLink" class:active={currentPath === '/admin/kids'}>
-					Kids
-				</a>
-			</li>
-			<li class="navItem">
-				<a href="/admin/media" class="navLink" class:active={currentPath === '/admin/media'}>
-					Media
-				</a>
-			</li>
-			<li class="navItem">
-				<a href="/admin/sponsors" class="navLink" class:active={currentPath === '/admin/sponsors'}>
-					Sponsors
-				</a>
-			</li>
-			<li class="navItem">
-				<button onclick={handleLogout} class="logoutButton">Logout</button>
 			</li>
 		{/if}
 	</ul>
@@ -111,34 +87,6 @@
 	}
 
 	.navLink:focus-visible {
-		outline: 2px solid var(--primaryColor);
-		outline-offset: 2px;
-	}
-
-	.logoutButton {
-		display: inline-block;
-		padding: var(--spacing-sm) var(--spacing-md);
-		background: transparent;
-		color: var(--textColor);
-		border: 1px solid var(--borderColor);
-		border-radius: var(--radius-md);
-		cursor: pointer;
-		font-family: inherit;
-		font-size: inherit;
-		font-weight: 500;
-		transition:
-			color var(--transition-fast),
-			background-color var(--transition-fast),
-			border-color var(--transition-fast);
-	}
-
-	.logoutButton:hover {
-		color: var(--primaryColor);
-		background-color: oklch(from var(--primaryColor) l c h / 0.1);
-		border-color: var(--primaryColor);
-	}
-
-	.logoutButton:focus-visible {
 		outline: 2px solid var(--primaryColor);
 		outline-offset: 2px;
 	}
