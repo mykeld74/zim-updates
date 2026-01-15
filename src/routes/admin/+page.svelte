@@ -12,7 +12,7 @@
 			title: 'Kids',
 			description: 'Manage kids information and profiles',
 			href: '/admin/kids',
-			icon: '👧👦'
+			icon: '👩🏾‍🦱🧑🏾‍🦱'
 		},
 		{
 			title: 'Media',
@@ -24,7 +24,7 @@
 			title: 'Sponsors',
 			description: 'Manage sponsor information and relationships',
 			href: '/admin/sponsors',
-			icon: '🤝'
+			icon: '🤝🏽'
 		}
 	];
 </script>

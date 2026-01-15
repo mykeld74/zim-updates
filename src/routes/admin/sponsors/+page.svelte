@@ -32,34 +32,6 @@
 		await invalidateAll();
 	}
 
-	function smoothScrollTo(element: Element) {
-		const startPosition = window.pageYOffset;
-		const targetPosition = element.getBoundingClientRect().top + window.pageYOffset - 20; // 20px offset
-		const distance = targetPosition - startPosition;
-		const duration = 800; // 800ms duration
-		let start: number | null = null;
-
-		function animation(currentTime: number) {
-			if (start === null) start = currentTime;
-			const timeElapsed = currentTime - start;
-			const progress = Math.min(timeElapsed / duration, 1);
-
-			// Easing function for smooth animation
-			const ease =
-				progress < 0.5
-					? 4 * progress * progress * progress
-					: 1 - Math.pow(-2 * progress + 2, 3) / 2;
-
-			window.scrollTo(0, startPosition + distance * ease);
-
-			if (timeElapsed < duration) {
-				requestAnimationFrame(animation);
-			}
-		}
-
-		requestAnimationFrame(animation);
-	}
-
 	function startCreating() {
 		isCreating = true;
 		editingSponsor = null;
@@ -71,18 +43,6 @@
 			sponsorshipType: 'individual',
 			kidIds: []
 		};
-
-		// Scroll to form and focus first input
-		setTimeout(() => {
-			const formCard = document.querySelector('.formCard');
-			if (formCard) {
-				smoothScrollTo(formCard);
-				const firstInput = formCard.querySelector('input') as HTMLInputElement;
-				if (firstInput) {
-					firstInput.focus();
-				}
-			}
-		}, 150);
 	}
 
 	function startEditing(sponsor: SponsorWithKids) {
@@ -96,18 +56,6 @@
 			sponsorshipType: sponsor.sponsorshipType,
 			kidIds: sponsor.kids.map((k) => k.id)
 		};
-
-		// Scroll to form and focus first input
-		setTimeout(() => {
-			const formCard = document.querySelector('.formCard');
-			if (formCard) {
-				smoothScrollTo(formCard);
-				const firstInput = formCard.querySelector('input') as HTMLInputElement;
-				if (firstInput) {
-					firstInput.focus();
-				}
-			}
-		}, 150);
 	}
 
 	function cancelForm() {
@@ -242,71 +190,6 @@
 		</div>
 	{/if}
 
-	{#if isCreating || editingSponsor}
-		<div class="formCard">
-			<h3>{editingSponsor ? 'Edit Sponsor' : 'Create New Sponsor'}</h3>
-
-			<form
-				onsubmit={(e) => {
-					e.preventDefault();
-					saveSponsor();
-				}}
-			>
-				<div class="formGrid">
-					<div class="formGroup">
-						<label for="firstName">First Name</label>
-						<input type="text" id="firstName" bind:value={formData.firstName} required />
-					</div>
-
-					<div class="formGroup">
-						<label for="lastName">Last Name</label>
-						<input type="text" id="lastName" bind:value={formData.lastName} required />
-					</div>
-
-					<div class="formGroup">
-						<label for="phoneNumber">Phone Number</label>
-						<input type="tel" id="phoneNumber" bind:value={formData.phoneNumber} required />
-					</div>
-
-					<div class="formGroup">
-						<label for="email">Email Address</label>
-						<input type="email" id="email" bind:value={formData.email} required />
-					</div>
-
-					<div class="formGroup">
-						<label for="sponsorshipType">Sponsorship Type</label>
-						<select id="sponsorshipType" bind:value={formData.sponsorshipType} required>
-							<option value="individual">Individual</option>
-							<option value="family">Family</option>
-							<option value="group">Group</option>
-						</select>
-					</div>
-				</div>
-
-				<div class="formGroup">
-					<div class="fieldLabel">Sponsored Kids</div>
-					<div class="kidsGrid">
-						{#each sortedKids() as kid}
-							<label class="kidCheckbox">
-								<input
-									type="checkbox"
-									checked={formData.kidIds.includes(kid.id)}
-									onchange={() => toggleKid(kid.id)}
-								/>
-								<span>{kid.name}</span>
-							</label>
-						{/each}
-					</div>
-				</div>
-
-				<div class="formActions">
-					<button type="submit" class="primaryButton">Save</button>
-					<button type="button" class="secondaryButton" onclick={cancelForm}>Cancel</button>
-				</div>
-			</form>
-		</div>
-	{/if}
-
 	{#if sponsors.length > 0}
 		<div class="tableControls">
 			<button class="toggleDetailsBtn" onclick={() => (showDetails = !showDetails)}>
@@ -406,10 +289,85 @@
 	{/if}
 </div>
 
+<!-- Sidebar Overlay -->
+{#if isCreating || editingSponsor}
+	<div
+		class="sidebarOverlay"
+		onclick={cancelForm}
+		onkeydown={(e) => e.key === 'Escape' && cancelForm()}
+		role="button"
+		tabindex="-1"
+	></div>
+	<aside class="sidebar">
+		<div class="sidebarHeader">
+			<h3>{editingSponsor ? 'Edit Sponsor' : 'Add New Sponsor'}</h3>
+			<button class="closeButton" onclick={cancelForm} aria-label="Close sidebar">✕</button>
+		</div>
+
+		<div class="sidebarContent">
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					saveSponsor();
+				}}
+			>
+				<div class="formGroup">
+					<label for="firstName">First Name</label>
+					<input type="text" id="firstName" bind:value={formData.firstName} required />
+				</div>
+
+				<div class="formGroup">
+					<label for="lastName">Last Name</label>
+					<input type="text" id="lastName" bind:value={formData.lastName} required />
+				</div>
+
+				<div class="formGroup">
+					<label for="phoneNumber">Phone Number</label>
+					<input type="tel" id="phoneNumber" bind:value={formData.phoneNumber} required />
+				</div>
+
+				<div class="formGroup">
+					<label for="email">Email Address</label>
+					<input type="email" id="email" bind:value={formData.email} required />
+				</div>
+
+				<div class="formGroup">
+					<label for="sponsorshipType">Sponsorship Type</label>
+					<select id="sponsorshipType" bind:value={formData.sponsorshipType} required>
+						<option value="individual">Individual</option>
+						<option value="family">Family</option>
+						<option value="group">Group</option>
+					</select>
+				</div>
+
+				<div class="formGroup">
+					<div class="fieldLabel">Sponsored Kids</div>
+					<div class="kidsGrid">
+						{#each sortedKids() as kid}
+							<label class="kidCheckbox">
+								<input
+									type="checkbox"
+									checked={formData.kidIds.includes(kid.id)}
+									onchange={() => toggleKid(kid.id)}
+								/>
+								<span>{kid.name}</span>
+							</label>
+						{/each}
+					</div>
+				</div>
+
+				<div class="formActions">
+					<button type="submit" class="primaryButton">Save</button>
+					<button type="button" class="secondaryButton" onclick={cancelForm}>Cancel</button>
+				</div>
+			</form>
+		</div>
+	</aside>
+{/if}
+
 <style>
 	.adminPage {
 		animation: cardsIn var(--transition-base);
-		scroll-behavior: smooth;
 
 		.header {
 			display: flex;
@@ -443,91 +401,6 @@
 			&:hover {
 				opacity: 0.9;
 				transform: translateY(-2px);
-			}
-		}
-
-		.formCard {
-			background: var(--surfaceColor);
-			padding: var(--spacing-xl);
-			border-radius: var(--radius-lg);
-			box-shadow: var(--shadow-sm);
-			margin-bottom: var(--spacing-xl);
-			transition: all var(--transition-base);
-			transform: translateY(0);
-
-			h3 {
-				color: var(--primaryColor);
-				margin-bottom: var(--spacing-lg);
-			}
-
-			.formGrid {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-				gap: var(--spacing-lg);
-				margin-bottom: var(--spacing-lg);
-			}
-
-			.formGroup {
-				display: flex;
-				flex-direction: column;
-				gap: var(--spacing-xs);
-
-				label {
-					font-weight: 600;
-					color: var(--textColor);
-				}
-
-				input,
-				select {
-					padding: var(--spacing-sm);
-					border: 1px solid var(--borderColor, #ddd);
-					border-radius: var(--radius-md);
-					font-size: 1rem;
-					background: var(--backgroundColor);
-					color: var(--textColor);
-				}
-			}
-
-			.fieldLabel {
-				font-weight: 600;
-				color: var(--textColor);
-			}
-
-			.kidsGrid {
-				display: grid;
-				grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-				gap: var(--spacing-sm);
-				padding: var(--spacing-md);
-				background: var(--backgroundColor);
-				border-radius: var(--radius-md);
-
-				.kidCheckbox {
-					display: flex;
-					align-items: center;
-					gap: var(--spacing-xs);
-					cursor: pointer;
-				}
-			}
-
-			.formActions {
-				display: flex;
-				gap: var(--spacing-md);
-				margin-top: var(--spacing-lg);
-			}
-		}
-
-		.secondaryButton {
-			background: transparent;
-			color: var(--textColor);
-			padding: var(--spacing-sm) var(--spacing-lg);
-			border: 1px solid var(--borderColor, #ddd);
-			border-radius: var(--radius-md);
-			font-weight: 600;
-			cursor: pointer;
-			transition: all var(--transition-base);
-
-			&:hover {
-				background: var(--surfaceColor);
 			}
 		}
 
@@ -739,6 +612,164 @@
 
 			.tableActions {
 				flex-direction: column;
+			}
+		}
+	}
+
+	/* Sidebar Styles */
+	.sidebarOverlay {
+		position: fixed;
+		inset: 0;
+		background: oklch(0 0 0 / 0.5);
+		z-index: 100;
+		animation: fadeIn 0.3s ease-out;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	.sidebar {
+		position: fixed;
+		top: 0;
+		right: 0;
+		width: min(450px, 90vw);
+		height: 100vh;
+		background: var(--surfaceColor);
+		box-shadow: var(--shadow-lg, -4px 0 20px oklch(0 0 0 / 0.15));
+		z-index: 101;
+		display: flex;
+		flex-direction: column;
+		animation: slideIn 0.3s ease-out;
+	}
+
+	@keyframes slideIn {
+		from {
+			transform: translateX(100%);
+		}
+		to {
+			transform: translateX(0);
+		}
+	}
+
+	.sidebarHeader {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--spacing-lg);
+		border-bottom: 1px solid var(--borderColor, #ddd);
+		background: var(--backgroundColor);
+
+		h3 {
+			color: var(--primaryColor);
+			margin: 0;
+		}
+	}
+
+	.closeButton {
+		background: transparent;
+		border: none;
+		font-size: 1.5rem;
+		cursor: pointer;
+		color: var(--textMuted);
+		padding: var(--spacing-xs);
+		line-height: 1;
+		transition: color var(--transition-base);
+
+		&:hover {
+			color: var(--primaryColor);
+		}
+	}
+
+	.sidebarContent {
+		flex: 1;
+		overflow-y: auto;
+		padding: var(--spacing-lg);
+
+		.formGroup {
+			display: flex;
+			flex-direction: column;
+			gap: var(--spacing-xs);
+			margin-bottom: var(--spacing-lg);
+
+			label,
+			.fieldLabel {
+				font-weight: 600;
+				color: var(--textColor);
+			}
+
+			input,
+			select {
+				padding: var(--spacing-sm);
+				border: 1px solid var(--borderColor, #ddd);
+				border-radius: var(--radius-md);
+				font-size: 1rem;
+				background: var(--backgroundColor);
+				color: var(--textColor);
+			}
+		}
+
+		.kidsGrid {
+			display: flex;
+			flex-direction: column;
+			gap: var(--spacing-sm);
+			padding: var(--spacing-md);
+			background: var(--backgroundColor);
+			border-radius: var(--radius-md);
+			max-height: 250px;
+			overflow-y: auto;
+
+			.kidCheckbox {
+				display: flex;
+				align-items: center;
+				gap: var(--spacing-xs);
+				cursor: pointer;
+			}
+		}
+
+		.formActions {
+			display: flex;
+			gap: var(--spacing-md);
+			margin-top: var(--spacing-lg);
+			padding-top: var(--spacing-lg);
+			border-top: 1px solid var(--borderColor, #ddd);
+			position: sticky;
+			bottom: 0;
+			background: var(--surfaceColor);
+		}
+
+		.primaryButton {
+			background: var(--primaryColor);
+			color: var(--contrastColor);
+			padding: var(--spacing-sm) var(--spacing-lg);
+			border: none;
+			border-radius: var(--radius-md);
+			font-weight: 600;
+			cursor: pointer;
+			transition: all var(--transition-base);
+
+			&:hover {
+				opacity: 0.9;
+			}
+		}
+
+		.secondaryButton {
+			background: transparent;
+			color: var(--textColor);
+			padding: var(--spacing-sm) var(--spacing-lg);
+			border: 1px solid var(--borderColor, #ddd);
+			border-radius: var(--radius-md);
+			font-weight: 600;
+			cursor: pointer;
+			transition: all var(--transition-base);
+
+			&:hover {
+				background: var(--backgroundColor);
 			}
 		}
 	}

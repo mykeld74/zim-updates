@@ -37,7 +37,9 @@
 	// Sort sponsors alphabetically by name
 	const sortedSponsors = $derived(
 		[...allSponsors].sort((a, b) =>
-			`${a.firstName} ${a.lastName}`.toLowerCase().localeCompare(`${b.firstName} ${b.lastName}`.toLowerCase())
+			`${a.firstName} ${a.lastName}`
+				.toLowerCase()
+				.localeCompare(`${b.firstName} ${b.lastName}`.toLowerCase())
 		)
 	);
 
@@ -199,122 +201,6 @@
 		</div>
 	{/if}
 
-	{#if isCreating || editingKid}
-		<div class="formCard">
-			<h3>{editingKid ? 'Edit Kid' : 'Add New Kid'}</h3>
-
-			<form
-				onsubmit={(e) => {
-					e.preventDefault();
-					saveKid();
-				}}
-			>
-				<div class="formGrid">
-					<div class="formGroup">
-						<label for="name">Name *</label>
-						<input type="text" id="name" bind:value={formData.name} required />
-					</div>
-
-					<div class="formGroup">
-						<label for="birthday">Birthday</label>
-						<input type="date" id="birthday" bind:value={formData.birthday} />
-					</div>
-
-					<div class="formGroup">
-						<label for="gender">Gender</label>
-						<select id="gender" bind:value={formData.gender}>
-							<option value="">Select...</option>
-							<option value="Male">Male</option>
-							<option value="Female">Female</option>
-						</select>
-					</div>
-				</div>
-
-				<div class="formGroup">
-					<div class="fieldLabel">Profile Image</div>
-					<div class="imageSection">
-						{#if formData.image}
-							<div class="selectedImage">
-								<AdminImage source={formData.image} altTag={formData.name} width="200" />
-								<div class="imageActions">
-									<button type="button" class="changeImageButton" onclick={toggleGallery}>
-										{showImageGallery ? 'Cancel' : 'Choose from Gallery'}
-									</button>
-									<button type="button" class="changeImageButton" onclick={toggleUpload}>
-										{showImageUpload ? 'Cancel' : 'Upload New'}
-									</button>
-								</div>
-							</div>
-						{:else}
-							<div class="imageActions">
-								<button type="button" class="selectImageButton" onclick={toggleGallery}>
-									Choose from Gallery
-								</button>
-								<button type="button" class="selectImageButton" onclick={toggleUpload}>
-									Upload New Image
-								</button>
-							</div>
-						{/if}
-					</div>
-
-					{#if showImageGallery}
-						<div class="gallerySection">
-							<h4>Select from Existing Images</h4>
-							{#if existingImages.length > 0}
-								<div class="imageGrid">
-									{#each existingImages as img (img.publicId)}
-										<button
-											type="button"
-											class="galleryImage"
-											onclick={() => selectExistingImage(img.publicId)}
-										>
-											<AdminImage source={img.publicId} altTag="Gallery image" width="150" />
-											<div class="imageOverlay">Select</div>
-										</button>
-									{/each}
-								</div>
-							{:else}
-								<p class="noImages">No images found. Upload some images in the Media page first.</p>
-							{/if}
-						</div>
-					{/if}
-
-					{#if showImageUpload}
-						<div class="uploadSection">
-							<h4>Upload New Image</h4>
-							<CloudinaryUpload
-								folder="zim-admin"
-								tags={['kid-profile']}
-								onSuccess={handleImageUpload}
-							/>
-						</div>
-					{/if}
-				</div>
-
-				<div class="formGroup">
-					<div class="fieldLabel">Sponsors</div>
-					<div class="sponsorsGrid">
-						{#each sortedSponsors as sponsor}
-							<label class="sponsorCheckbox">
-								<input
-									type="checkbox"
-									checked={formData.sponsorIds.includes(sponsor.id)}
-									onchange={() => toggleSponsor(sponsor.id)}
-								/>
-								<span>{sponsor.firstName} {sponsor.lastName}</span>
-							</label>
-						{/each}
-					</div>
-				</div>
-
-				<div class="formActions">
-					<button type="submit" class="primaryButton">Save</button>
-					<button type="button" class="secondaryButton" onclick={cancelForm}>Cancel</button>
-				</div>
-			</form>
-		</div>
-	{/if}
-
 	{#if kids.length > 0}
 		<div class="kidsGrid">
 			{#each sortedKids as kid (kid.id)}
@@ -325,7 +211,7 @@
 						</div>
 					{:else}
 						<div class="placeholderImage">
-							<span>👧🏿👦🏿</span>
+							<span>👩🏾‍🦱🧑🏾‍🦱</span>
 						</div>
 					{/if}
 
@@ -371,6 +257,133 @@
 	{/if}
 </div>
 
+<!-- Sidebar Overlay -->
+{#if isCreating || editingKid}
+	<div
+		class="sidebarOverlay"
+		onclick={cancelForm}
+		onkeydown={(e) => e.key === 'Escape' && cancelForm()}
+		role="button"
+		tabindex="-1"
+	></div>
+	<aside class="sidebar">
+		<div class="sidebarHeader">
+			<h3>{editingKid ? 'Edit Kid' : 'Add New Kid'}</h3>
+			<button class="closeButton" onclick={cancelForm} aria-label="Close sidebar">✕</button>
+		</div>
+
+		<div class="sidebarContent">
+			<form
+				onsubmit={(e) => {
+					e.preventDefault();
+					saveKid();
+				}}
+			>
+				<div class="formGroup">
+					<label for="name">Name *</label>
+					<input type="text" id="name" bind:value={formData.name} required />
+				</div>
+
+				<div class="formGroup">
+					<label for="birthday">Birthday</label>
+					<input type="date" id="birthday" bind:value={formData.birthday} />
+				</div>
+
+				<div class="formGroup">
+					<label for="gender">Gender</label>
+					<select id="gender" bind:value={formData.gender}>
+						<option value="">Select...</option>
+						<option value="Male">Male</option>
+						<option value="Female">Female</option>
+					</select>
+				</div>
+
+				<div class="formGroup">
+					<div class="fieldLabel">Profile Image</div>
+					<div class="imageSection">
+						{#if formData.image}
+							<div class="selectedImage">
+								<AdminImage source={formData.image} altTag={formData.name} width="200" />
+								<div class="imageActions">
+									<button type="button" class="changeImageButton" onclick={toggleGallery}>
+										{showImageGallery ? 'Cancel' : 'Gallery'}
+									</button>
+									<button type="button" class="changeImageButton" onclick={toggleUpload}>
+										{showImageUpload ? 'Cancel' : 'Upload'}
+									</button>
+								</div>
+							</div>
+						{:else}
+							<div class="imageActions">
+								<button type="button" class="selectImageButton" onclick={toggleGallery}>
+									Choose from Gallery
+								</button>
+								<button type="button" class="selectImageButton" onclick={toggleUpload}>
+									Upload New Image
+								</button>
+							</div>
+						{/if}
+					</div>
+
+					{#if showImageGallery}
+						<div class="gallerySection">
+							<h4>Select from Existing Images</h4>
+							{#if existingImages.length > 0}
+								<div class="imageGrid">
+									{#each existingImages as img (img.publicId)}
+										<button
+											type="button"
+											class="galleryImage"
+											onclick={() => selectExistingImage(img.publicId)}
+										>
+											<AdminImage source={img.publicId} altTag="Gallery image" width="100" />
+											<div class="imageOverlay">Select</div>
+										</button>
+									{/each}
+								</div>
+							{:else}
+								<p class="noImages">No images found.</p>
+							{/if}
+						</div>
+					{/if}
+
+					{#if showImageUpload}
+						<div class="uploadSection">
+							<h4>Upload New Image</h4>
+							<CloudinaryUpload
+								folder="zim-admin"
+								tags={['kid-profile']}
+								onSuccess={handleImageUpload}
+							/>
+						</div>
+					{/if}
+				</div>
+
+				<div class="formGroup">
+					<div class="fieldLabel">Sponsors</div>
+					<div class="sponsorsGrid">
+						{#each sortedSponsors as sponsor}
+							<label class="sponsorCheckbox">
+								<input
+									type="checkbox"
+									checked={formData.sponsorIds.includes(sponsor.id)}
+									onchange={() => toggleSponsor(sponsor.id)}
+								/>
+								<span>{sponsor.firstName} {sponsor.lastName}</span>
+							</label>
+						{/each}
+					</div>
+				</div>
+
+				<div class="formActions">
+					<button type="submit" class="primaryButton">Save</button>
+					<button type="button" class="secondaryButton" onclick={cancelForm}>Cancel</button>
+				</div>
+			</form>
+		</div>
+	</aside>
+{/if}
+
 <style>
 	.adminPage {
 		animation: cardsIn var(--transition-base);
@@ -411,30 +424,87 @@
 		transform: translateY(-2px);
 	}
 
-	.formCard {
+	/* Sidebar Styles */
+	.sidebarOverlay {
+		position: fixed;
+		inset: 0;
+		background: oklch(0 0 0 / 0.5);
+		z-index: 100;
+		animation: fadeIn 0.3s ease-out;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	.sidebar {
+		position: fixed;
+		top: 0;
+		right: 0;
+		width: min(450px, 90vw);
+		height: 100vh;
 		background: var(--surfaceColor);
-		padding: var(--spacing-xl);
-		border-radius: var(--radius-lg);
-		box-shadow: var(--shadow-sm);
-		margin-bottom: var(--spacing-xl);
+		box-shadow: var(--shadow-lg, -4px 0 20px oklch(0 0 0 / 0.15));
+		z-index: 101;
+		display: flex;
+		flex-direction: column;
+		animation: slideIn 0.3s ease-out;
 	}
 
-	.formCard h3 {
+	@keyframes slideIn {
+		from {
+			transform: translateX(100%);
+		}
+		to {
+			transform: translateX(0);
+		}
+	}
+
+	.sidebarHeader {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--spacing-lg);
+		border-bottom: 1px solid var(--borderColor, #ddd);
+		background: var(--backgroundColor);
+	}
+
+	.sidebarHeader h3 {
 		color: var(--primaryColor);
-		margin-bottom: var(--spacing-lg);
+		margin: 0;
 	}
 
-	.formGrid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-		gap: var(--spacing-lg);
-		margin-bottom: var(--spacing-lg);
+	.closeButton {
+		background: transparent;
+		border: none;
+		font-size: 1.5rem;
+		cursor: pointer;
+		color: var(--textMuted);
+		padding: var(--spacing-xs);
+		line-height: 1;
+		transition: color var(--transition-base);
+	}
+
+	.closeButton:hover {
+		color: var(--primaryColor);
+	}
+
+	.sidebarContent {
+		flex: 1;
+		overflow-y: auto;
+		padding: var(--spacing-lg);
 	}
 
 	.formGroup {
 		display: flex;
 		flex-direction: column;
 		gap: var(--spacing-xs);
+		margin-bottom: var(--spacing-lg);
 	}
 
 	.formGroup label,
@@ -508,8 +578,10 @@
 
 	.imageGrid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-		gap: var(--spacing-md);
+		grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+		gap: var(--spacing-sm);
+		max-height: 250px;
+		overflow-y: auto;
 	}
 
 	.galleryImage {
@@ -554,12 +626,14 @@
 	}
 
 	.sponsorsGrid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+		display: flex;
+		flex-direction: column;
 		gap: var(--spacing-sm);
 		padding: var(--spacing-md);
 		background: var(--backgroundColor);
 		border-radius: var(--radius-md);
+		max-height: 200px;
+		overflow-y: auto;
 	}
 
 	.sponsorCheckbox {
@@ -573,6 +647,11 @@
 		display: flex;
 		gap: var(--spacing-md);
 		margin-top: var(--spacing-lg);
+		padding-top: var(--spacing-lg);
+		border-top: 1px solid var(--borderColor, #ddd);
+		position: sticky;
+		bottom: 0;
+		background: var(--surfaceColor);
 	}
 
 	.secondaryButton {
