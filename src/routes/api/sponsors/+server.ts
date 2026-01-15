@@ -1,18 +1,39 @@
-import { json } from '@sveltejs/kit';
+import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getAllSponsors, createSponsor } from '$lib/server/sponsors';
+import { db } from '$lib/server/db';
+import { user as userTable } from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 
-export const GET: RequestHandler = async () => {
+async function requireApprovedUser(locals: App.Locals) {
+	if (!locals.user) {
+		throw error(401, 'Unauthorized');
+	}
+
+	const currentUser = await db.query.user.findFirst({
+		where: eq(userTable.id, locals.user.id)
+	});
+
+	if (!currentUser?.approved) {
+		throw error(403, 'Forbidden: Account not approved');
+	}
+}
+
+export const GET: RequestHandler = async ({ locals }) => {
+	await requireApprovedUser(locals);
+
 	try {
 		const sponsors = await getAllSponsors();
 		return json({ sponsors });
-	} catch (error) {
-		console.error('Error fetching sponsors:', error);
+	} catch (err) {
+		console.error('Error fetching sponsors:', err);
 		return json({ error: 'Failed to fetch sponsors' }, { status: 500 });
 	}
 };
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
+	await requireApprovedUser(locals);
+
 	try {
 		const data = await request.json();
 

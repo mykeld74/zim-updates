@@ -1,16 +1,8 @@
 <script lang="ts">
 	import type { UpdatePost } from '$lib/server/updates';
+	import { formatDateShort } from '$lib/utils';
 
 	let { posts = [] }: { posts?: UpdatePost[] } = $props();
-
-	function formatDate(dateString: string) {
-		const date = new Date(dateString);
-		return date.toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
-	}
 </script>
 
 <div class="sidebar">
@@ -20,7 +12,7 @@
 			<a href="/updates/{post.slug}" class="postItem">
 				<h3 class="postTitle">{post.title}</h3>
 				<time class="postDate" datetime={post.createdAt || post.created_at}>
-					{formatDate(post.createdAt || post.created_at)}
+					{formatDateShort(post.createdAt || post.created_at)}
 				</time>
 			</a>
 		{/each}
@@ -31,7 +23,7 @@
 	.sidebar {
 		width: 300px;
 		height: 100vh;
-		background-color: rgba(0, 0, 0, 0.7);
+		background-color: oklch(from var(--surfaceColor) 0.15 c h / 0.9);
 		border-right: 1px solid var(--borderColor);
 		padding: var(--spacing-md);
 		overflow-y: auto;

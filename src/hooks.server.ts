@@ -10,7 +10,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 	});
 
 	event.locals.session = sessionData?.session ?? null;
-	event.locals.user = sessionData?.user ?? null;
+	// Set initial user without approved status (will be set later if needed)
+	event.locals.user = sessionData?.user
+		? { ...sessionData.user, approved: false }
+		: null;
 
 	// Protect admin routes
 	if (event.url.pathname.startsWith('/admin')) {

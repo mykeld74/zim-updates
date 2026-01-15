@@ -1,16 +1,19 @@
 /* Global Styles - Light & Dark Mode Support */
 
 :root {
+	/* Base hue for color scheme */
+	--hue: 240;
+
 	/* Light mode colors - Modern Ocean Blue Scheme */
-	--primaryColor: oklch(0.55 0.18 240);
+	--primaryColor: oklch(0.55 0.18 var(--hue));
 	--secondaryColor: oklch(0.6 0.15 220);
 	--accentColor: oklch(0.65 0.16 200);
 	--contrastColor: oklch(0.99 0 0);
-	--backgroundColor: oklch(0.98 0.005 240);
-	--surfaceColor: oklch(0.96 0.01 240);
-	--textColor: oklch(0.2 0.02 240);
-	--textMuted: oklch(0.5 0.03 240);
-	--borderColor: oklch(0.88 0.01 240);
+	--backgroundColor: oklch(0.98 0.005 var(--hue));
+	--surfaceColor: oklch(0.96 0.01 var(--hue));
+	--textColor: oklch(0.2 0.02 var(--hue));
+	--textMuted: oklch(0.5 0.03 var(--hue));
+	--borderColor: oklch(0.88 0.01 var(--hue));
 	--errorColor: oklch(0.55 0.22 25);
 	--successColor: oklch(0.65 0.18 155);
 	--warningColor: oklch(0.7 0.18 75);

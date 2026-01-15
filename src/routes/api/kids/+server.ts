@@ -1,18 +1,39 @@
-import { json } from '@sveltejs/kit';
+import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getAllKids, createKid } from '$lib/server/sponsors';
+import { db } from '$lib/server/db';
+import { user as userTable } from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 
-export const GET: RequestHandler = async () => {
+async function requireApprovedUser(locals: App.Locals) {
+	if (!locals.user) {
+		throw error(401, 'Unauthorized');
+	}
+
+	const currentUser = await db.query.user.findFirst({
+		where: eq(userTable.id, locals.user.id)
+	});
+
+	if (!currentUser?.approved) {
+		throw error(403, 'Forbidden: Account not approved');
+	}
+}
+
+export const GET: RequestHandler = async ({ locals }) => {
+	await requireApprovedUser(locals);
+
 	try {
 		const kids = await getAllKids();
 		return json({ kids });
-	} catch (error) {
-		console.error('Error fetching kids:', error);
+	} catch (err) {
+		console.error('Error fetching kids:', err);
 		return json({ error: 'Failed to fetch kids' }, { status: 500 });
 	}
 };
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
+	await requireApprovedUser(locals);
+
 	try {
 		const data = await request.json();
 

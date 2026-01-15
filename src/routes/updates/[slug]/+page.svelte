@@ -1,110 +1,12 @@
 <script lang="ts">
 	import { Image, BlockRenderer } from '$lib';
+	import { formatDate, renderLexicalContent } from '$lib/utils';
 
 	const { data } = $props();
 	const post = $derived(data.post);
 
 	const useBlocks = $derived(post.layout && post.layout.length > 0);
-
-	function formatDate(dateString: string) {
-		return new Date(dateString).toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
-		});
-	}
-
-	function renderLexicalContent(content: any) {
-		// Lexical content renderer with support for various node types
-		if (!content || !content.root) return '';
-
-		function renderNode(node: any): string {
-			if (!node) return '';
-
-			// Text node with formatting
-			if (node.text !== undefined) {
-				let text = node.text;
-
-				// Lexical format flags: 1=bold, 2=italic, 4=strikethrough, 8=underline, 16=code
-				if (node.format) {
-					if (node.format & 1) text = `<strong>${text}</strong>`; // bold
-					if (node.format & 2) text = `<em>${text}</em>`; // italic
-					if (node.format & 4) text = `<s>${text}</s>`; // strikethrough
-					if (node.format & 8) text = `<u>${text}</u>`; // underline
-					if (node.format & 16) text = `<code>${text}</code>`; // code
-				}
-
-				return text;
-			}
-
-			// Paragraph
-			if (node.type === 'paragraph') {
-				const content = node.children?.map(renderNode).join('') || '';
-				return `<p>${content}</p>`;
-			}
-
-			// Heading
-			if (node.type === 'heading') {
-				const content = node.children?.map(renderNode).join('') || '';
-				const tag = node.tag || 'h2';
-				return `<${tag}>${content}</${tag}>`;
-			}
-
-			// List (unordered)
-			if (node.type === 'list' && node.listType === 'bullet') {
-				const items = node.children?.map(renderNode).join('') || '';
-				return `<ul>${items}</ul>`;
-			}
-
-			// List (ordered)
-			if (node.type === 'list' && node.listType === 'number') {
-				const items = node.children?.map(renderNode).join('') || '';
-				return `<ol>${items}</ol>`;
-			}
-
-			// List item
-			if (node.type === 'listitem') {
-				const content = node.children?.map(renderNode).join('') || '';
-				return `<li>${content}</li>`;
-			}
-
-			// Link
-			if (node.type === 'link') {
-				const content = node.children?.map(renderNode).join('') || '';
-				const url = node.url || '#';
-				return `<a href="${url}">${content}</a>`;
-			}
-
-			// Quote/Blockquote
-			if (node.type === 'quote') {
-				const content = node.children?.map(renderNode).join('') || '';
-				return `<blockquote>${content}</blockquote>`;
-			}
-
-			// Image
-			if (node.type === 'upload' || node.type === 'image') {
-				const imageUrl = node.value?.url || node.src || '';
-				const alt = node.value?.alt || node.alt || '';
-				const width = node.value?.width || node.width || '';
-				const height = node.value?.height || node.height || '';
-
-				if (imageUrl) {
-					return `<img src="${imageUrl}" alt="${alt}" ${width ? `width="${width}"` : ''} ${height ? `height="${height}"` : ''} loading="lazy" />`;
-				}
-				return '';
-			}
-
-			// Default: try to render children
-			if (node.children) {
-				return node.children.map(renderNode).join('');
-			}
-
-			return '';
-		}
-
-		const children = content.root.children || [];
-		return children.map(renderNode).join('');
-	}
+	const featuredImageSrc = $derived(post.featuredImage || post.featured_image);
 </script>
 
 <article class="postContainer">
@@ -118,9 +20,9 @@
 		</div>
 	</header>
 
-	{#if post.featuredImage || post.featured_image}
+	{#if featuredImageSrc}
 		<div class="featuredImage">
-			<Image source={post.featuredImage || post.featured_image} altTag={post.title} width="1200" />
+			<Image source={featuredImageSrc} altTag={post.title} width="1200" />
 		</div>
 	{/if}
 
@@ -142,10 +44,6 @@
 </article>
 
 <style>
-	.hero {
-		padding: 0;
-		margin: 0;
-	}
 	.postContainer {
 		max-width: 1100px;
 		margin: 0 auto;

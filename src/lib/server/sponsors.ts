@@ -1,6 +1,7 @@
 import { db } from './db';
 import { sponsor, kid, sponsorKid } from './db/schema';
 import { eq, and } from 'drizzle-orm';
+import { generateId } from '$lib/utils';
 
 export interface Sponsor {
 	id: string;
@@ -31,9 +32,23 @@ export interface KidWithSponsors extends Kid {
 	sponsors: Sponsor[];
 }
 
-// Generate unique ID (simple implementation, consider using nanoid or uuid in production)
-function generateId(): string {
-	return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+// Type for partial sponsor updates
+interface SponsorUpdateData {
+	firstName?: string;
+	lastName?: string;
+	phoneNumber?: string;
+	email?: string;
+	sponsorshipType?: string;
+	updatedAt: Date;
+}
+
+// Type for partial kid updates
+interface KidUpdateData {
+	name?: string;
+	birthday?: Date | null;
+	gender?: string | null;
+	image?: string | null;
+	updatedAt: Date;
 }
 
 // Sponsor CRUD operations
@@ -141,7 +156,7 @@ export async function updateSponsor(
 	const now = new Date();
 
 	// Update sponsor basic info
-	const updateData: any = { updatedAt: now };
+	const updateData: SponsorUpdateData = { updatedAt: now };
 	if (data.firstName !== undefined) updateData.firstName = data.firstName;
 	if (data.lastName !== undefined) updateData.lastName = data.lastName;
 	if (data.phoneNumber !== undefined) updateData.phoneNumber = data.phoneNumber;
@@ -224,6 +239,7 @@ export async function getKidById(id: string): Promise<KidWithSponsors | null> {
 			lastName: sponsor.lastName,
 			phoneNumber: sponsor.phoneNumber,
 			email: sponsor.email,
+			sponsorshipType: sponsor.sponsorshipType,
 			createdAt: sponsor.createdAt,
 			updatedAt: sponsor.updatedAt
 		})
@@ -250,6 +266,7 @@ export async function getAllKids(): Promise<KidWithSponsors[]> {
 				lastName: sponsor.lastName,
 				phoneNumber: sponsor.phoneNumber,
 				email: sponsor.email,
+				sponsorshipType: sponsor.sponsorshipType,
 				createdAt: sponsor.createdAt,
 				updatedAt: sponsor.updatedAt
 			}
@@ -277,7 +294,7 @@ export async function updateKid(
 	const now = new Date();
 
 	// Update kid basic info
-	const updateData: any = { updatedAt: now };
+	const updateData: KidUpdateData = { updatedAt: now };
 	if (data.name !== undefined) updateData.name = data.name;
 	if (data.birthday !== undefined) updateData.birthday = data.birthday;
 	if (data.gender !== undefined) updateData.gender = data.gender;

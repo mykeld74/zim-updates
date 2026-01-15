@@ -1,20 +1,8 @@
 <script lang="ts">
 	import { Image } from '$lib';
+	import { formatDate } from '$lib/utils';
 
 	const { data } = $props();
-
-	function formatDate(dateString: string | undefined) {
-		if (!dateString) return 'No date';
-
-		const date = new Date(dateString);
-		if (isNaN(date.getTime())) return 'Invalid date';
-
-		return date.toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
-		});
-	}
 </script>
 
 <div class="updatesContainer">
@@ -30,15 +18,12 @@
 	{:then posts}
 		<div class="postsGrid">
 			{#each posts as post (post.id)}
+				{@const postImageSrc = post.featuredImage || post.featured_image}
 				<article class="postCard">
 					<a href="/updates/{post.slug}" class="postLink">
-						{#if post.featuredImage || post.featured_image}
+						{#if postImageSrc}
 							<div class="imageContainer">
-								<Image
-									source={post.featuredImage || post.featured_image}
-									altTag={post.title}
-									width="600"
-								/>
+								<Image source={postImageSrc} altTag={post.title} width="600" />
 							</div>
 						{/if}
 

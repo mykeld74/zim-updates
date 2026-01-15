@@ -1,8 +1,27 @@
-import { json } from '@sveltejs/kit';
+import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getKidById, updateKid, deleteKid } from '$lib/server/sponsors';
+import { db } from '$lib/server/db';
+import { user as userTable } from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 
-export const GET: RequestHandler = async ({ params }) => {
+async function requireApprovedUser(locals: App.Locals) {
+	if (!locals.user) {
+		throw error(401, 'Unauthorized');
+	}
+
+	const currentUser = await db.query.user.findFirst({
+		where: eq(userTable.id, locals.user.id)
+	});
+
+	if (!currentUser?.approved) {
+		throw error(403, 'Forbidden: Account not approved');
+	}
+}
+
+export const GET: RequestHandler = async ({ params, locals }) => {
+	await requireApprovedUser(locals);
+
 	try {
 		const kid = await getKidById(params.id);
 
@@ -11,13 +30,15 @@ export const GET: RequestHandler = async ({ params }) => {
 		}
 
 		return json({ kid });
-	} catch (error) {
-		console.error('Error fetching kid:', error);
+	} catch (err) {
+		console.error('Error fetching kid:', err);
 		return json({ error: 'Failed to fetch kid' }, { status: 500 });
 	}
 };
 
-export const PUT: RequestHandler = async ({ params, request }) => {
+export const PUT: RequestHandler = async ({ params, request, locals }) => {
+	await requireApprovedUser(locals);
+
 	try {
 		const data = await request.json();
 
@@ -34,18 +55,20 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		}
 
 		return json({ kid });
-	} catch (error) {
-		console.error('Error updating kid:', error);
+	} catch (err) {
+		console.error('Error updating kid:', err);
 		return json({ error: 'Failed to update kid' }, { status: 500 });
 	}
 };
 
-export const DELETE: RequestHandler = async ({ params }) => {
+export const DELETE: RequestHandler = async ({ params, locals }) => {
+	await requireApprovedUser(locals);
+
 	try {
 		await deleteKid(params.id);
 		return json({ success: true });
-	} catch (error) {
-		console.error('Error deleting kid:', error);
+	} catch (err) {
+		console.error('Error deleting kid:', err);
 		return json({ error: 'Failed to delete kid' }, { status: 500 });
 	}
 };

@@ -2,24 +2,13 @@
 	import { onMount } from 'svelte';
 	import gsap from 'gsap';
 	import { Image } from '$lib';
+	import { formatDate, sanitizeText, truncate } from '$lib/utils';
 	import type { UpdatePost, Block } from '$lib';
 
 	const { data } = $props();
 
 	const fallbackExcerpt = 'Catch up on the latest news from Zim Updates.';
 	const excerptLimit = 180;
-
-	function sanitizeText(text: string) {
-		return text
-			.replace(/<[^>]+>/g, ' ')
-			.replace(/\s+/g, ' ')
-			.trim();
-	}
-
-	function truncate(text: string) {
-		if (text.length <= excerptLimit) return text;
-		return `${text.slice(0, excerptLimit - 1).trimEnd()}…`;
-	}
 
 	function extractText(block: Block) {
 		const fields = ['excerpt', 'content', 'text', 'richText', 'description', 'body'];
@@ -36,36 +25,23 @@
 
 	function getExcerpt(post: UpdatePost) {
 		if (post.excerpt && post.excerpt.trim().length > 0) {
-			return truncate(sanitizeText(post.excerpt));
+			return truncate(sanitizeText(post.excerpt), excerptLimit);
 		}
 
 		if (typeof post.content === 'string' && post.content.trim().length > 0) {
-			return truncate(sanitizeText(post.content));
+			return truncate(sanitizeText(post.content), excerptLimit);
 		}
 
 		if (Array.isArray(post.layout)) {
 			for (const block of post.layout) {
 				const text = extractText(block);
 				if (text && text.length > 0) {
-					return truncate(text);
+					return truncate(text, excerptLimit);
 				}
 			}
 		}
 
-		return truncate(fallbackExcerpt);
-	}
-
-	function formatDate(dateString: string | undefined) {
-		if (!dateString) return 'No date';
-
-		const date = new Date(dateString);
-		if (isNaN(date.getTime())) return 'Invalid date';
-
-		return date.toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
-		});
+		return truncate(fallbackExcerpt, excerptLimit);
 	}
 
 	onMount(() => {
@@ -140,15 +116,12 @@
 		{:then posts}
 			{#if posts.length > 0}
 				{@const featuredPost = posts[0] as UpdatePost}
+				{@const featuredImageSrc = featuredPost.featuredImage || featuredPost.featured_image}
 				<article class="featuredCard">
 					<a class="featuredLink" href="/updates/{featuredPost.slug}">
-						{#if featuredPost.featuredImage || featuredPost.featured_image}
+						{#if featuredImageSrc}
 							<div class="featuredMedia">
-								<Image
-									source={featuredPost.featuredImage || featuredPost.featured_image}
-									altTag={featuredPost.title}
-									width="960"
-								/>
+								<Image source={featuredImageSrc} altTag={featuredPost.title} width="960" />
 							</div>
 						{/if}
 
@@ -168,15 +141,12 @@
 					{@const recentPosts = posts.slice(1, 4) as UpdatePost[]}
 					<div class="recentGrid" role="list">
 						{#each recentPosts as post (post.id)}
+							{@const recentImageSrc = post.featuredImage || post.featured_image}
 							<article class="recentCard" role="listitem">
 								<a class="recentLink" href="/updates/{post.slug}">
-									{#if post.featuredImage || post.featured_image}
+									{#if recentImageSrc}
 										<div class="recentMedia">
-											<Image
-												source={post.featuredImage || post.featured_image}
-												altTag={post.title}
-												width="480"
-											/>
+											<Image source={recentImageSrc} altTag={post.title} width="480" />
 										</div>
 									{/if}
 

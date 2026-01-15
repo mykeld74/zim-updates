@@ -14,12 +14,10 @@ export function buildCldUrl(
 ): { src: string; alt: string } {
 	const image = cld.image(publicId);
 	if (options?.width || options?.height) {
-		image.resize(
-			fill()
-				.width(options.width ?? undefined)
-				.height(options.height ?? undefined)
-				.gravity(autoGravity())
-		);
+		const resizeAction = fill().gravity(autoGravity());
+		if (options.width) resizeAction.width(options.width);
+		if (options.height) resizeAction.height(options.height);
+		image.resize(resizeAction);
 	}
 	return { src: image.toURL(), alt: options?.alt ?? publicId };
 }

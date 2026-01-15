@@ -1,35 +1,29 @@
 <script lang="ts">
 	import CloudinaryUpload from '$lib/components/CloudinaryUpload.svelte';
 	import { AdminImage } from '$lib';
+	import { invalidateAll } from '$app/navigation';
+
+	interface ImageData {
+		publicId: string;
+		url: string;
+		width: number;
+		height: number;
+	}
+
+	const { data } = $props();
 
 	let uploadedImages = $state<Array<{ publicId: string; url: string }>>([]);
-	let existingImages = $state<
-		Array<{ publicId: string; url: string; width: number; height: number }>
-	>([]);
-	let loading = $state(true);
+	let existingImages = $state<ImageData[]>(data.images);
 
-	async function loadExistingImages() {
-		try {
-			const response = await fetch('/api/cloudinary/images?folder=zim-admin');
-			if (response.ok) {
-				const data = await response.json();
-				existingImages = data.images;
-			}
-		} catch (error) {
-			console.error('Error loading images:', error);
-		} finally {
-			loading = false;
-		}
-	}
-
-	function handleUploadSuccess(publicId: string, url: string) {
-		uploadedImages = [...uploadedImages, { publicId, url }];
-		loadExistingImages();
-	}
-
+	// Keep local state in sync with server data
 	$effect(() => {
-		loadExistingImages();
+		existingImages = data.images;
 	});
+
+	async function handleUploadSuccess(publicId: string, url: string) {
+		uploadedImages = [...uploadedImages, { publicId, url }];
+		await invalidateAll();
+	}
 </script>
 
 <div class="pageWrapper">
@@ -53,9 +47,7 @@
 
 	<section class="gallery" aria-label="All images in zim-admin folder">
 		<h2>All Images in zim-admin Folder</h2>
-		{#if loading}
-			<p class="loadingText">Loading images...</p>
-		{:else if existingImages.length > 0}
+		{#if existingImages.length > 0}
 			<div class="grid">
 				{#each existingImages as img (img.publicId)}
 					<div class="imageCard">
@@ -113,7 +105,6 @@
 		margin: 0;
 	}
 
-	.loadingText,
 	.emptyText {
 		color: var(--textMuted);
 		font-style: italic;

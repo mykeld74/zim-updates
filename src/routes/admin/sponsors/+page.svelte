@@ -1,13 +1,16 @@
 <script lang="ts">
 	import type { SponsorWithKids, Kid } from '$lib/server/sponsors';
+	import { invalidateAll } from '$app/navigation';
 
-	let sponsors = $state<SponsorWithKids[]>([]);
-	let allKids = $state<Kid[]>([]);
-	let loading = $state(true);
+	const { data } = $props();
+
+	let sponsors = $state<SponsorWithKids[]>(data.sponsors);
+	let allKids = $state<Kid[]>(data.kids);
 	let editingSponsor = $state<SponsorWithKids | null>(null);
 	let isCreating = $state(false);
 	let sortColumn = $state<string | null>(null);
 	let sortDirection = $state<'asc' | 'desc'>('asc');
+	let errorMessage = $state<string | null>(null);
 
 	let formData = $state({
 		firstName: '',
@@ -18,30 +21,14 @@
 		kidIds: [] as string[]
 	});
 
-	async function loadSponsors() {
-		try {
-			const response = await fetch('/api/sponsors');
-			if (response.ok) {
-				const data = await response.json();
-				sponsors = data.sponsors;
-			}
-		} catch (error) {
-			console.error('Error loading sponsors:', error);
-		} finally {
-			loading = false;
-		}
-	}
+	// Keep local state in sync with server data
+	$effect(() => {
+		sponsors = data.sponsors;
+		allKids = data.kids;
+	});
 
-	async function loadKids() {
-		try {
-			const response = await fetch('/api/kids');
-			if (response.ok) {
-				const data = await response.json();
-				allKids = data.kids;
-			}
-		} catch (error) {
-			console.error('Error loading kids:', error);
-		}
+	async function refreshData() {
+		await invalidateAll();
 	}
 
 	function smoothScrollTo(element: Element) {
@@ -136,6 +123,7 @@
 	}
 
 	async function saveSponsor() {
+		errorMessage = null;
 		try {
 			const url = editingSponsor ? `/api/sponsors/${editingSponsor.id}` : '/api/sponsors';
 			const method = editingSponsor ? 'PUT' : 'POST';
@@ -147,24 +135,33 @@
 			});
 
 			if (response.ok) {
-				await loadSponsors();
+				await refreshData();
 				cancelForm();
+			} else {
+				const result = await response.json();
+				errorMessage = result.error || 'Failed to save sponsor';
 			}
 		} catch (error) {
 			console.error('Error saving sponsor:', error);
+			errorMessage = 'An error occurred while saving';
 		}
 	}
 
 	async function deleteSponsor(id: string) {
 		if (!confirm('Are you sure you want to delete this sponsor?')) return;
 
+		errorMessage = null;
 		try {
 			const response = await fetch(`/api/sponsors/${id}`, { method: 'DELETE' });
 			if (response.ok) {
-				await loadSponsors();
+				await refreshData();
+			} else {
+				const result = await response.json();
+				errorMessage = result.error || 'Failed to delete sponsor';
 			}
 		} catch (error) {
 			console.error('Error deleting sponsor:', error);
+			errorMessage = 'An error occurred while deleting';
 		}
 	}
 
@@ -223,10 +220,6 @@
 		});
 	});
 
-	$effect(() => {
-		loadSponsors();
-		loadKids();
-	});
 </script>
 
 <div class="adminPage">
@@ -237,6 +230,13 @@
 		</div>
 		<button class="primaryButton" onclick={startCreating}>+ Add Sponsor</button>
 	</div>
+
+	{#if errorMessage}
+		<div class="errorBanner" role="alert">
+			<p>{errorMessage}</p>
+			<button onclick={() => (errorMessage = null)} class="dismissButton">Dismiss</button>
+		</div>
+	{/if}
 
 	{#if isCreating || editingSponsor}
 		<div class="formCard">
@@ -303,9 +303,7 @@
 		</div>
 	{/if}
 
-	{#if loading}
-		<p class="loadingText">Loading sponsors...</p>
-	{:else if sponsors.length > 0}
+	{#if sponsors.length > 0}
 		<div class="tableContainer">
 			<table class="sponsorsTable">
 				<thead>
@@ -649,14 +647,44 @@
 			}
 		}
 
-		.loadingText,
-		.emptyState {
-			text-align: center;
-			color: var(--textMuted);
-			padding: var(--spacing-2xl);
-			background: var(--surfaceColor);
-			border-radius: var(--radius-lg);
+	.emptyState {
+		text-align: center;
+		color: var(--textMuted);
+		padding: var(--spacing-2xl);
+		background: var(--surfaceColor);
+		border-radius: var(--radius-lg);
+	}
+
+	.errorBanner {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--spacing-md) var(--spacing-lg);
+		background: oklch(0.95 0.05 20);
+		color: oklch(0.4 0.15 20);
+		border: 1px solid oklch(0.8 0.08 20);
+		border-radius: var(--radius-md);
+		margin-bottom: var(--spacing-lg);
+
+		p {
+			margin: 0;
 		}
+
+		.dismissButton {
+			background: transparent;
+			border: 1px solid currentColor;
+			color: inherit;
+			padding: var(--spacing-xs) var(--spacing-sm);
+			border-radius: var(--radius-sm);
+			cursor: pointer;
+			font-size: 0.875rem;
+
+			&:hover {
+				background: oklch(0.4 0.15 20);
+				color: white;
+			}
+		}
+	}
 
 		/* Responsive table */
 		@media (max-width: 768px) {

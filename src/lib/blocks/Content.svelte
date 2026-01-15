@@ -1,79 +1,15 @@
 <script lang="ts">
 	import type { Block } from '$lib/server/updates';
+	import { renderLexicalContent } from '$lib/utils';
+	import type { LexicalContent } from '$lib/utils';
 
 	interface Props extends Block {
-		body?: any;
-		content?: any;
-		richText?: any;
+		body?: LexicalContent;
+		content?: LexicalContent;
+		richText?: LexicalContent;
 	}
 
 	let { body, content, richText }: Props = $props();
-
-	function renderLexicalContent(content: any) {
-		if (!content || !content.root) return '';
-
-		function renderNode(node: any): string {
-			if (!node) return '';
-
-			if (node.text !== undefined) {
-				let text = node.text;
-				if (node.format) {
-					if (node.format & 1) text = `<strong>${text}</strong>`;
-					if (node.format & 2) text = `<em>${text}</em>`;
-					if (node.format & 4) text = `<s>${text}</s>`;
-					if (node.format & 8) text = `<u>${text}</u>`;
-					if (node.format & 16) text = `<code>${text}</code>`;
-				}
-				return text;
-			}
-
-			if (node.type === 'paragraph') {
-				const content = node.children?.map(renderNode).join('') || '';
-				return `<p>${content}</p>`;
-			}
-
-			if (node.type === 'heading') {
-				const content = node.children?.map(renderNode).join('') || '';
-				const tag = node.tag || 'h2';
-				return `<${tag}>${content}</${tag}>`;
-			}
-
-			if (node.type === 'list' && node.listType === 'bullet') {
-				const items = node.children?.map(renderNode).join('') || '';
-				return `<ul>${items}</ul>`;
-			}
-
-			if (node.type === 'list' && node.listType === 'number') {
-				const items = node.children?.map(renderNode).join('') || '';
-				return `<ol>${items}</ol>`;
-			}
-
-			if (node.type === 'listitem') {
-				const content = node.children?.map(renderNode).join('') || '';
-				return `<li>${content}</li>`;
-			}
-
-			if (node.type === 'link') {
-				const content = node.children?.map(renderNode).join('') || '';
-				const url = node.url || '#';
-				return `<a href="${url}">${content}</a>`;
-			}
-
-			if (node.type === 'quote') {
-				const content = node.children?.map(renderNode).join('') || '';
-				return `<blockquote>${content}</blockquote>`;
-			}
-
-			if (node.children) {
-				return node.children.map(renderNode).join('');
-			}
-
-			return '';
-		}
-
-		const children = content.root.children || [];
-		return children.map(renderNode).join('');
-	}
 
 	const contentData = body || content || richText;
 </script>

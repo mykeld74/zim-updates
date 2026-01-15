@@ -2,15 +2,18 @@
 	import { AdminImage } from '$lib';
 	import CloudinaryUpload from '$lib/components/CloudinaryUpload.svelte';
 	import type { KidWithSponsors, Sponsor } from '$lib/server/sponsors';
+	import { invalidateAll } from '$app/navigation';
 
-	let kids = $state<KidWithSponsors[]>([]);
-	let allSponsors = $state<Sponsor[]>([]);
-	let loading = $state(true);
+	const { data } = $props();
+
+	let kids = $state<KidWithSponsors[]>(data.kids);
+	let allSponsors = $state<Sponsor[]>(data.sponsors);
 	let editingKid = $state<KidWithSponsors | null>(null);
 	let isCreating = $state(false);
 	let showImageUpload = $state(false);
 	let showImageGallery = $state(false);
 	let existingImages = $state<Array<{ publicId: string; url: string }>>([]);
+	let errorMessage = $state<string | null>(null);
 
 	let formData = $state({
 		name: '',
@@ -20,39 +23,22 @@
 		sponsorIds: [] as string[]
 	});
 
-	async function loadKids() {
-		try {
-			const response = await fetch('/api/kids');
-			if (response.ok) {
-				const data = await response.json();
-				kids = data.kids;
-			}
-		} catch (error) {
-			console.error('Error loading kids:', error);
-		} finally {
-			loading = false;
-		}
-	}
+	// Keep local state in sync with server data
+	$effect(() => {
+		kids = data.kids;
+		allSponsors = data.sponsors;
+	});
 
-	async function loadSponsors() {
-		try {
-			const response = await fetch('/api/sponsors');
-			if (response.ok) {
-				const data = await response.json();
-				allSponsors = data.sponsors;
-			}
-		} catch (error) {
-			console.error('Error loading sponsors:', error);
-		}
+	async function refreshData() {
+		await invalidateAll();
 	}
 
 	async function loadExistingImages() {
 		try {
 			const response = await fetch('/api/cloudinary/images?folder=zim-admin');
 			if (response.ok) {
-				const data = await response.json();
-				existingImages = data.images;
-				console.log('Loaded images:', existingImages.length);
+				const imagesData = await response.json();
+				existingImages = imagesData.images;
 			}
 		} catch (error) {
 			console.error('Error loading images:', error);
@@ -98,11 +84,12 @@
 	}
 
 	async function saveKid() {
+		errorMessage = null;
 		try {
 			const url = editingKid ? `/api/kids/${editingKid.id}` : '/api/kids';
 			const method = editingKid ? 'PUT' : 'POST';
 
-			const payload: any = {
+			const payload: Record<string, unknown> = {
 				name: formData.name,
 				gender: formData.gender || null,
 				image: formData.image || null,
@@ -120,24 +107,33 @@
 			});
 
 			if (response.ok) {
-				await loadKids();
+				await refreshData();
 				cancelForm();
+			} else {
+				const result = await response.json();
+				errorMessage = result.error || 'Failed to save kid';
 			}
 		} catch (error) {
 			console.error('Error saving kid:', error);
+			errorMessage = 'An error occurred while saving';
 		}
 	}
 
 	async function deleteKid(id: string) {
 		if (!confirm('Are you sure you want to delete this kid?')) return;
 
+		errorMessage = null;
 		try {
 			const response = await fetch(`/api/kids/${id}`, { method: 'DELETE' });
 			if (response.ok) {
-				await loadKids();
+				await refreshData();
+			} else {
+				const result = await response.json();
+				errorMessage = result.error || 'Failed to delete kid';
 			}
 		} catch (error) {
 			console.error('Error deleting kid:', error);
+			errorMessage = 'An error occurred while deleting';
 		}
 	}
 
@@ -149,7 +145,7 @@
 		}
 	}
 
-	function handleImageUpload(publicId: string, url: string) {
+	function handleImageUpload(publicId: string) {
 		formData.image = publicId;
 		showImageUpload = false;
 		showImageGallery = false;
@@ -173,11 +169,6 @@
 		showImageUpload = !showImageUpload;
 		showImageGallery = false;
 	}
-
-	$effect(() => {
-		loadKids();
-		loadSponsors();
-	});
 </script>
 
 <div class="adminPage">
@@ -188,6 +179,13 @@
 		</div>
 		<button class="primaryButton" onclick={startCreating}>+ Add Kid</button>
 	</div>
+
+	{#if errorMessage}
+		<div class="errorBanner" role="alert">
+			<p>{errorMessage}</p>
+			<button onclick={() => (errorMessage = null)} class="dismissButton">Dismiss</button>
+		</div>
+	{/if}
 
 	{#if isCreating || editingKid}
 		<div class="formCard">
@@ -305,9 +303,7 @@
 		</div>
 	{/if}
 
-	{#if loading}
-		<p class="loadingText">Loading kids...</p>
-	{:else if kids.length > 0}
+	{#if kids.length > 0}
 		<div class="kidsGrid">
 			{#each kids as kid (kid.id)}
 				<div class="kidCard">
@@ -700,12 +696,42 @@
 		opacity: 0.8;
 	}
 
-	.loadingText,
 	.emptyState {
 		text-align: center;
 		color: var(--textMuted);
 		padding: var(--spacing-2xl);
 		background: var(--surfaceColor);
 		border-radius: var(--radius-lg);
+	}
+
+	.errorBanner {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--spacing-md) var(--spacing-lg);
+		background: oklch(0.95 0.05 20);
+		color: oklch(0.4 0.15 20);
+		border: 1px solid oklch(0.8 0.08 20);
+		border-radius: var(--radius-md);
+		margin-bottom: var(--spacing-lg);
+	}
+
+	.errorBanner p {
+		margin: 0;
+	}
+
+	.errorBanner .dismissButton {
+		background: transparent;
+		border: 1px solid currentColor;
+		color: inherit;
+		padding: var(--spacing-xs) var(--spacing-sm);
+		border-radius: var(--radius-sm);
+		cursor: pointer;
+		font-size: 0.875rem;
+	}
+
+	.errorBanner .dismissButton:hover {
+		background: oklch(0.4 0.15 20);
+		color: white;
 	}
 </style>

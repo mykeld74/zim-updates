@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { Block } from '$lib/server/updates';
-	import type { ComponentType } from 'svelte';
 
 	interface Props {
 		blocks: Block[];
@@ -8,8 +7,11 @@
 
 	let { blocks }: Props = $props();
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	type ComponentModule = { default: any };
+
 	// Map block types to their component loaders
-	const componentLoaders: Record<string, () => Promise<any>> = {
+	const componentLoaders: Record<string, () => Promise<ComponentModule>> = {
 		hero: () => import('$lib/blocks/Hero.svelte'),
 		content: () => import('$lib/blocks/Content.svelte'),
 		richText: () => import('$lib/blocks/Content.svelte'),
@@ -25,20 +27,21 @@
 
 <div class="blockRenderer">
 	{#each blocks as block (block.id)}
-		{#if getComponentLoader(block.blockType)}
-			{#await getComponentLoader(block.blockType)?.() then module}
+		{@const loader = getComponentLoader(block.blockType)}
+		{#if loader}
+			{#await loader() then module}
 				{#if module?.default}
-					{@const Component = module.default}
-					<Component {...block} />
+					{@const BlockComponent = module.default}
+					<BlockComponent {...block} />
 				{:else}
 					<div class="blockError">
 						<p>Error loading block: {block.blockType}</p>
 					</div>
 				{/if}
-			{:catch error}
+			{:catch err}
 				<div class="blockError">
 					<p>Failed to load block: {block.blockType}</p>
-					<p class="errorMessage">{error.message}</p>
+					<p class="errorMessage">{err.message}</p>
 				</div>
 			{/await}
 		{:else}

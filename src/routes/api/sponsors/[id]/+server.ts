@@ -1,8 +1,27 @@
-import { json } from '@sveltejs/kit';
+import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getSponsorById, updateSponsor, deleteSponsor } from '$lib/server/sponsors';
+import { db } from '$lib/server/db';
+import { user as userTable } from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 
-export const GET: RequestHandler = async ({ params }) => {
+async function requireApprovedUser(locals: App.Locals) {
+	if (!locals.user) {
+		throw error(401, 'Unauthorized');
+	}
+
+	const currentUser = await db.query.user.findFirst({
+		where: eq(userTable.id, locals.user.id)
+	});
+
+	if (!currentUser?.approved) {
+		throw error(403, 'Forbidden: Account not approved');
+	}
+}
+
+export const GET: RequestHandler = async ({ params, locals }) => {
+	await requireApprovedUser(locals);
+
 	try {
 		const sponsor = await getSponsorById(params.id);
 
@@ -11,13 +30,15 @@ export const GET: RequestHandler = async ({ params }) => {
 		}
 
 		return json({ sponsor });
-	} catch (error) {
-		console.error('Error fetching sponsor:', error);
+	} catch (err) {
+		console.error('Error fetching sponsor:', err);
 		return json({ error: 'Failed to fetch sponsor' }, { status: 500 });
 	}
 };
 
-export const PUT: RequestHandler = async ({ params, request }) => {
+export const PUT: RequestHandler = async ({ params, request, locals }) => {
+	await requireApprovedUser(locals);
+
 	try {
 		const data = await request.json();
 
@@ -35,18 +56,20 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		}
 
 		return json({ sponsor });
-	} catch (error) {
-		console.error('Error updating sponsor:', error);
+	} catch (err) {
+		console.error('Error updating sponsor:', err);
 		return json({ error: 'Failed to update sponsor' }, { status: 500 });
 	}
 };
 
-export const DELETE: RequestHandler = async ({ params }) => {
+export const DELETE: RequestHandler = async ({ params, locals }) => {
+	await requireApprovedUser(locals);
+
 	try {
 		await deleteSponsor(params.id);
 		return json({ success: true });
-	} catch (error) {
-		console.error('Error deleting sponsor:', error);
+	} catch (err) {
+		console.error('Error deleting sponsor:', err);
 		return json({ error: 'Failed to delete sponsor' }, { status: 500 });
 	}
 };
