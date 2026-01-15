@@ -29,6 +29,11 @@
 		allSponsors = data.sponsors;
 	});
 
+	// Sort kids alphabetically by name
+	const sortedKids = $derived(
+		[...kids].sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
+	);
+
 	async function refreshData() {
 		await invalidateAll();
 	}
@@ -305,7 +310,7 @@
 
 	{#if kids.length > 0}
 		<div class="kidsGrid">
-			{#each kids as kid (kid.id)}
+			{#each sortedKids as kid (kid.id)}
 				<div class="kidCard">
 					{#if kid.image}
 						<div class="kidImage">
@@ -313,7 +318,7 @@
 						</div>
 					{:else}
 						<div class="placeholderImage">
-							<span>👧👦</span>
+							<span>👧🏿👦🏿</span>
 						</div>
 					{/if}
 

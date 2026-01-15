@@ -1,0 +1,1 @@
+ALTER TABLE "sponsor" ADD COLUMN "subscribed" boolean DEFAULT true NOT NULL;

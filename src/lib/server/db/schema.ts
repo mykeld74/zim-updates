@@ -59,6 +59,7 @@ export const sponsor = pgTable('sponsor', {
 	phoneNumber: text('phoneNumber').notNull(),
 	email: text('email').notNull(),
 	sponsorshipType: text('sponsorshipType').notNull().default('individual'),
+	subscribed: boolean('subscribed').notNull().default(true),
 	createdAt: timestamp('createdAt').notNull(),
 	updatedAt: timestamp('updatedAt').notNull()
 });
