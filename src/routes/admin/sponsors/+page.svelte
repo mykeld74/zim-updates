@@ -11,6 +11,7 @@
 	let sortColumn = $state<string | null>(null);
 	let sortDirection = $state<'asc' | 'desc'>('asc');
 	let errorMessage = $state<string | null>(null);
+	let showDetails = $state(false);
 
 	let formData = $state({
 		firstName: '',
@@ -182,6 +183,10 @@
 		}
 	}
 
+	const sortedKids = $derived(() => {
+		return [...allKids].sort((a, b) => a.name.localeCompare(b.name));
+	});
+
 	const sortedSponsors = $derived(() => {
 		if (!sortColumn) return sponsors;
 
@@ -281,7 +286,7 @@
 				<div class="formGroup">
 					<div class="fieldLabel">Sponsored Kids</div>
 					<div class="kidsGrid">
-						{#each allKids as kid}
+						{#each sortedKids() as kid}
 							<label class="kidCheckbox">
 								<input
 									type="checkbox"
@@ -303,6 +308,11 @@
 	{/if}
 
 	{#if sponsors.length > 0}
+		<div class="tableControls">
+			<button class="toggleDetailsBtn" onclick={() => (showDetails = !showDetails)}>
+				{showDetails ? 'Hide Details' : 'Show Details'}
+			</button>
+		</div>
 		<div class="tableContainer">
 			<table class="sponsorsTable">
 				<thead>
@@ -315,30 +325,32 @@
 								{/if}
 							</span>
 						</th>
-						<th class="sortable" onclick={() => sortBy('type')}>
-							Type
-							<span class="sortIndicator">
-								{#if sortColumn === 'type'}
-									{sortDirection === 'asc' ? '↑' : '↓'}
-								{/if}
-							</span>
-						</th>
-						<th class="sortable" onclick={() => sortBy('email')}>
-							Email
-							<span class="sortIndicator">
-								{#if sortColumn === 'email'}
-									{sortDirection === 'asc' ? '↑' : '↓'}
-								{/if}
-							</span>
-						</th>
-						<th class="sortable" onclick={() => sortBy('phone')}>
-							Phone
-							<span class="sortIndicator">
-								{#if sortColumn === 'phone'}
-									{sortDirection === 'asc' ? '↑' : '↓'}
-								{/if}
-							</span>
-						</th>
+						{#if showDetails}
+							<th class="sortable" onclick={() => sortBy('type')}>
+								Type
+								<span class="sortIndicator">
+									{#if sortColumn === 'type'}
+										{sortDirection === 'asc' ? '↑' : '↓'}
+									{/if}
+								</span>
+							</th>
+							<th class="sortable" onclick={() => sortBy('email')}>
+								Email
+								<span class="sortIndicator">
+									{#if sortColumn === 'email'}
+										{sortDirection === 'asc' ? '↑' : '↓'}
+									{/if}
+								</span>
+							</th>
+							<th class="sortable" onclick={() => sortBy('phone')}>
+								Phone
+								<span class="sortIndicator">
+									{#if sortColumn === 'phone'}
+										{sortDirection === 'asc' ? '↑' : '↓'}
+									{/if}
+								</span>
+							</th>
+						{/if}
 						<th class="sortable" onclick={() => sortBy('kids')}>
 							Sponsored Kids
 							<span class="sortIndicator">
@@ -356,11 +368,13 @@
 							<td class="nameCell">
 								<div class="sponsorName">{sponsor.firstName} {sponsor.lastName}</div>
 							</td>
-							<td class="typeCell">
-								<span class="sponsorshipType">{sponsor.sponsorshipType}</span>
-							</td>
-							<td class="emailCell">{sponsor.email}</td>
-							<td class="phoneCell">{sponsor.phoneNumber}</td>
+							{#if showDetails}
+								<td class="typeCell">
+									<span class="sponsorshipType">{sponsor.sponsorshipType}</span>
+								</td>
+								<td class="emailCell">{sponsor.email}</td>
+								<td class="phoneCell">{sponsor.phoneNumber}</td>
+							{/if}
 							<td class="kidsCell">
 								{#if sponsor.kids.length > 0}
 									<div class="kidsList">
@@ -514,6 +528,29 @@
 
 			&:hover {
 				background: var(--surfaceColor);
+			}
+		}
+
+		.tableControls {
+			display: flex;
+			justify-content: flex-end;
+			margin-bottom: var(--spacing-md);
+		}
+
+		.toggleDetailsBtn {
+			padding: var(--spacing-xs) var(--spacing-md);
+			background: var(--surfaceColor);
+			color: var(--primaryColor);
+			border: 1px solid var(--primaryColor);
+			border-radius: var(--radius-md);
+			font-weight: 600;
+			font-size: 0.875rem;
+			cursor: pointer;
+			transition: all var(--transition-base);
+
+			&:hover {
+				background: var(--primaryColor);
+				color: var(--contrastColor);
 			}
 		}
 

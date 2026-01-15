@@ -34,6 +34,13 @@
 		[...kids].sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
 	);
 
+	// Sort sponsors alphabetically by name
+	const sortedSponsors = $derived(
+		[...allSponsors].sort((a, b) =>
+			`${a.firstName} ${a.lastName}`.toLowerCase().localeCompare(`${b.firstName} ${b.lastName}`.toLowerCase())
+		)
+	);
+
 	async function refreshData() {
 		await invalidateAll();
 	}
@@ -287,7 +294,7 @@
 				<div class="formGroup">
 					<div class="fieldLabel">Sponsors</div>
 					<div class="sponsorsGrid">
-						{#each allSponsors as sponsor}
+						{#each sortedSponsors as sponsor}
 							<label class="sponsorCheckbox">
 								<input
 									type="checkbox"
