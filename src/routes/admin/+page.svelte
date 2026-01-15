@@ -3,6 +3,12 @@
 
 	const adminSections = [
 		{
+			title: 'Updates',
+			description: 'Create and manage blog posts and updates',
+			href: '/admin/updates',
+			icon: '📝'
+		},
+		{
 			title: 'Kids',
 			description: 'Manage kids information and profiles',
 			href: '/admin/kids',

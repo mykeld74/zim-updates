@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Image, BlockRenderer } from '$lib';
+	import { AdminImage, BlockRenderer } from '$lib';
 	import { formatDate, renderLexicalContent } from '$lib/utils';
 
 	const { data } = $props();
@@ -22,7 +22,7 @@
 
 	{#if featuredImageSrc}
 		<div class="featuredImage">
-			<Image source={featuredImageSrc} altTag={post.title} width="1200" />
+			<AdminImage source={featuredImageSrc} altTag={post.title} width="1200" />
 		</div>
 	{/if}
 
@@ -33,7 +33,7 @@
 		{:else if post.content}
 			<!-- Legacy rich text content -->
 			<div class="richText">
-				{@html renderLexicalContent(post.content)}
+				{@html renderLexicalContent(post.content as import('$lib/utils').LexicalContent)}
 			</div>
 		{/if}
 	</div>

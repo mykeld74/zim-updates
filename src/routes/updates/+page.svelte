@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Image } from '$lib';
+	import { AdminImage } from '$lib';
 	import { formatDate } from '$lib/utils';
 
 	const { data } = $props();
@@ -8,7 +8,7 @@
 <div class="updatesContainer">
 	<header class="updatesHeader">
 		<h1>Updates</h1>
-		<p class="subtitle">Latest news and stories from Zim</p>
+		<p class="subtitle">Latest news and stories from our friends in Zimbabwe</p>
 	</header>
 
 	{#await data.posts}
@@ -23,7 +23,7 @@
 					<a href="/updates/{post.slug}" class="postLink">
 						{#if postImageSrc}
 							<div class="imageContainer">
-								<Image source={postImageSrc} altTag={post.title} width="600" />
+								<AdminImage source={postImageSrc} altTag={post.title} width="600" />
 							</div>
 						{/if}
 
@@ -32,8 +32,6 @@
 							<p class="excerpt">{post.excerpt}</p>
 
 							<div class="postMeta">
-								<span class="author">{post.author}</span>
-
 								<span class="date">{formatDate(post.createdAt)}</span>
 							</div>
 						</div>
@@ -57,7 +55,7 @@
 <style>
 	.updatesContainer {
 		max-width: 1200px;
-		margin: 110px auto;
+		margin: 0 auto;
 		padding: var(--spacing-2xl) var(--spacing-lg);
 		animation: cardsIn var(--transition-base);
 	}
@@ -134,7 +132,7 @@
 
 	.postMeta {
 		display: flex;
-		justify-content: space-between;
+		justify-content: flex-end;
 		align-items: center;
 		padding-top: var(--spacing-md);
 		border-top: 1px solid oklch(0.8 0.02 var(--hue));

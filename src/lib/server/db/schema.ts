@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, primaryKey, jsonb } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const user = pgTable('user', {
@@ -107,3 +107,19 @@ export const sponsorKidRelations = relations(sponsorKid, ({ one }) => ({
 		references: [kid.id]
 	})
 }));
+
+// Updates/Posts table
+export const update = pgTable('update', {
+	id: text('id').primaryKey(),
+	title: text('title').notNull(),
+	slug: text('slug').notNull().unique(),
+	excerpt: text('excerpt'),
+	content: jsonb('content'), // Lexical rich text content
+	layout: jsonb('layout'), // Blocks array for block-based content
+	featuredImage: text('featuredImage'), // Cloudinary public ID
+	author: text('author').notNull().default('Admin'),
+	status: text('status').notNull().default('draft'), // 'draft' | 'published'
+	createdAt: timestamp('createdAt').notNull(),
+	updatedAt: timestamp('updatedAt').notNull(),
+	publishedAt: timestamp('publishedAt')
+});
