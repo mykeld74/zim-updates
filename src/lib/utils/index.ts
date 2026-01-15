@@ -102,12 +102,14 @@ interface LexicalNode {
 	alt?: string;
 	width?: number;
 	height?: number;
-	value?: {
-		url?: string;
-		alt?: string;
-		width?: number;
-		height?: number;
-	};
+	value?:
+		| string
+		| {
+				url?: string;
+				alt?: string;
+				width?: number;
+				height?: number;
+		  };
 	children?: LexicalNode[];
 }
 
@@ -122,6 +124,11 @@ interface LexicalContent {
  */
 function renderNode(node: LexicalNode): string {
 	if (!node) return '';
+
+	// Raw HTML content (from RichTextEditor)
+	if (node.type === 'html' && typeof node.value === 'string') {
+		return node.value;
+	}
 
 	// Text node with formatting
 	if (node.text !== undefined) {
@@ -185,10 +192,11 @@ function renderNode(node: LexicalNode): string {
 
 	// Image
 	if (node.type === 'upload' || node.type === 'image') {
-		const imageUrl = node.value?.url || node.src || '';
-		const alt = node.value?.alt || node.alt || '';
-		const width = node.value?.width || node.width || '';
-		const height = node.value?.height || node.height || '';
+		const valueObj = typeof node.value === 'object' ? node.value : null;
+		const imageUrl = valueObj?.url || node.src || '';
+		const alt = valueObj?.alt || node.alt || '';
+		const width = valueObj?.width || node.width || '';
+		const height = valueObj?.height || node.height || '';
 
 		if (imageUrl) {
 			const widthAttr = width ? ` width="${width}"` : '';

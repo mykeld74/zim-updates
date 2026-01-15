@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import gsap from 'gsap';
-	import { Image } from '$lib';
+	import { AdminImage } from '$lib';
 	import { formatDate, sanitizeText, truncate } from '$lib/utils';
 	import type { UpdatePost, Block } from '$lib';
 
@@ -26,10 +26,6 @@
 	function getExcerpt(post: UpdatePost) {
 		if (post.excerpt && post.excerpt.trim().length > 0) {
 			return truncate(sanitizeText(post.excerpt), excerptLimit);
-		}
-
-		if (typeof post.content === 'string' && post.content.trim().length > 0) {
-			return truncate(sanitizeText(post.content), excerptLimit);
 		}
 
 		if (Array.isArray(post.layout)) {
@@ -121,7 +117,7 @@
 					<a class="featuredLink" href="/updates/{featuredPost.slug}">
 						{#if featuredImageSrc}
 							<div class="featuredMedia">
-								<Image source={featuredImageSrc} altTag={featuredPost.title} width="960" />
+								<AdminImage source={featuredImageSrc} altTag={featuredPost.title} width="960" />
 							</div>
 						{/if}
 
@@ -146,7 +142,7 @@
 								<a class="recentLink" href="/updates/{post.slug}">
 									{#if recentImageSrc}
 										<div class="recentMedia">
-											<Image source={recentImageSrc} altTag={post.title} width="480" />
+											<AdminImage source={recentImageSrc} altTag={post.title} width="480" />
 										</div>
 									{/if}
 

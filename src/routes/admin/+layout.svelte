@@ -22,6 +22,7 @@
 	</header>
 
 	<nav class="adminNav">
+		<a href="/admin/updates" class="navLink">Updates</a>
 		<a href="/admin/kids" class="navLink">Kids</a>
 		<a href="/admin/media" class="navLink">Media</a>
 		<a href="/admin/sponsors" class="navLink">Sponsors</a>
