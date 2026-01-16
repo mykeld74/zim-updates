@@ -99,7 +99,7 @@ export function generateUpdateAnnouncementEmail(
 ): { subject: string; html: string } {
 	const updateUrl = `${siteUrl}/updates/${update.slug}`;
 
-	const subject = `New Update: ${update.title}`;
+	const subject = `New Zimbabwe Update: ${update.title}`;
 
 	const html = `
 <!DOCTYPE html>
@@ -116,7 +116,7 @@ export function generateUpdateAnnouncementEmail(
 				<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="margin: 0 auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
 					<!-- Header -->
 					<tr>
-						<td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%); border-radius: 12px 12px 0 0;">
+						<td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, #025990 0%, #0099FB 100%); border-radius: 12px 12px 0 0;">
 							<h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">New Update Available!</h1>
 						</td>
 					</tr>
@@ -136,7 +136,7 @@ export function generateUpdateAnnouncementEmail(
 									: ''
 							}
 
-							<a href="${updateUrl}" style="display: inline-block; padding: 14px 28px; background-color: #4f46e5; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+							<a href="${updateUrl}" style="display: inline-block; padding: 14px 28px; background-color: #025990; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
 								Read Full Update
 							</a>
 						</td>

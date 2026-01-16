@@ -9,22 +9,29 @@
 			icon: '📝'
 		},
 		{
+			title: 'Email',
+			description: 'Manage email templates and send emails',
+			href: '/admin/email',
+			icon: '📧'
+		},
+		{
 			title: 'Kids',
 			description: 'Manage kids information and profiles',
 			href: '/admin/kids',
 			icon: '👩🏾‍🦱🧑🏾‍🦱'
 		},
 		{
-			title: 'Media',
-			description: 'Upload and manage images with Cloudinary',
-			href: '/admin/media',
-			icon: '📸'
-		},
-		{
 			title: 'Sponsors',
 			description: 'Manage sponsor information and relationships',
 			href: '/admin/sponsors',
 			icon: '🤝🏽'
+		},
+
+		{
+			title: 'Media',
+			description: 'Upload and manage images with Cloudinary',
+			href: '/admin/media',
+			icon: '📸'
 		}
 	];
 </script>
