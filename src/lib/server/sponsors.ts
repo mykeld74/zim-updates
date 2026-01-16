@@ -10,6 +10,7 @@ export interface Sponsor {
 	phoneNumber: string;
 	email: string;
 	sponsorshipType: string;
+	subscribed: boolean;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -39,6 +40,7 @@ interface SponsorUpdateData {
 	phoneNumber?: string;
 	email?: string;
 	sponsorshipType?: string;
+	subscribed?: boolean;
 	updatedAt: Date;
 }
 
@@ -58,6 +60,7 @@ export async function createSponsor(data: {
 	phoneNumber: string;
 	email: string;
 	sponsorshipType?: string;
+	subscribed?: boolean;
 	kidIds?: string[];
 }) {
 	const now = new Date();
@@ -71,6 +74,7 @@ export async function createSponsor(data: {
 		phoneNumber: data.phoneNumber,
 		email: data.email,
 		sponsorshipType: data.sponsorshipType || 'individual',
+		subscribed: data.subscribed ?? true,
 		createdAt: now,
 		updatedAt: now
 	});
@@ -150,6 +154,7 @@ export async function updateSponsor(
 		phoneNumber?: string;
 		email?: string;
 		sponsorshipType?: string;
+		subscribed?: boolean;
 		kidIds?: string[];
 	}
 ) {
@@ -162,6 +167,7 @@ export async function updateSponsor(
 	if (data.phoneNumber !== undefined) updateData.phoneNumber = data.phoneNumber;
 	if (data.email !== undefined) updateData.email = data.email;
 	if (data.sponsorshipType !== undefined) updateData.sponsorshipType = data.sponsorshipType;
+	if (data.subscribed !== undefined) updateData.subscribed = data.subscribed;
 
 	await db.update(sponsor).set(updateData).where(eq(sponsor.id, id));
 
@@ -240,6 +246,7 @@ export async function getKidById(id: string): Promise<KidWithSponsors | null> {
 			phoneNumber: sponsor.phoneNumber,
 			email: sponsor.email,
 			sponsorshipType: sponsor.sponsorshipType,
+			subscribed: sponsor.subscribed,
 			createdAt: sponsor.createdAt,
 			updatedAt: sponsor.updatedAt
 		})
@@ -267,6 +274,7 @@ export async function getAllKids(): Promise<KidWithSponsors[]> {
 				phoneNumber: sponsor.phoneNumber,
 				email: sponsor.email,
 				sponsorshipType: sponsor.sponsorshipType,
+				subscribed: sponsor.subscribed,
 				createdAt: sponsor.createdAt,
 				updatedAt: sponsor.updatedAt
 			}
@@ -351,4 +359,9 @@ export async function removeKidFromSponsor(sponsorId: string, kidId: string) {
 	await db
 		.delete(sponsorKid)
 		.where(and(eq(sponsorKid.sponsorId, sponsorId), eq(sponsorKid.kidId, kidId)));
+}
+
+// Get only subscribed sponsors (for email notifications)
+export async function getSubscribedSponsors(): Promise<Sponsor[]> {
+	return db.select().from(sponsor).where(eq(sponsor.subscribed, true));
 }

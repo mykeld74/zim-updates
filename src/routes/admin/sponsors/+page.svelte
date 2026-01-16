@@ -19,6 +19,7 @@
 		phoneNumber: '',
 		email: '',
 		sponsorshipType: 'individual',
+		subscribed: true,
 		kidIds: [] as string[]
 	});
 
@@ -41,6 +42,7 @@
 			phoneNumber: '',
 			email: '',
 			sponsorshipType: 'individual',
+			subscribed: true,
 			kidIds: []
 		};
 	}
@@ -54,6 +56,7 @@
 			phoneNumber: sponsor.phoneNumber,
 			email: sponsor.email,
 			sponsorshipType: sponsor.sponsorshipType,
+			subscribed: sponsor.subscribed,
 			kidIds: sponsor.kids.map((k) => k.id)
 		};
 	}
@@ -67,6 +70,7 @@
 			phoneNumber: '',
 			email: '',
 			sponsorshipType: 'individual',
+			subscribed: true,
 			kidIds: []
 		};
 	}
@@ -233,6 +237,7 @@
 									{/if}
 								</span>
 							</th>
+							<th>Subscribed</th>
 						{/if}
 						<th class="sortable" onclick={() => sortBy('kids')}>
 							Sponsored Kids
@@ -257,6 +262,11 @@
 								</td>
 								<td class="emailCell">{sponsor.email}</td>
 								<td class="phoneCell">{sponsor.phoneNumber}</td>
+								<td class="subscribedCell">
+									<span class="subscribedBadge" class:subscribed={sponsor.subscribed}>
+										{sponsor.subscribed ? 'Yes' : 'No'}
+									</span>
+								</td>
 							{/if}
 							<td class="kidsCell">
 								{#if sponsor.kids.length > 0}
@@ -338,6 +348,13 @@
 						<option value="family">Family</option>
 						<option value="group">Group</option>
 					</select>
+				</div>
+
+				<div class="formGroup checkboxGroup">
+					<label class="checkboxLabel">
+						<input type="checkbox" bind:checked={formData.subscribed} />
+						<span>Subscribed to updates</span>
+					</label>
 				</div>
 
 				<div class="formGroup">
@@ -522,6 +539,21 @@
 			color: var(--textMuted);
 			font-style: italic;
 			font-size: 0.8rem;
+		}
+
+		.subscribedBadge {
+			display: inline-block;
+			padding: var(--spacing-xs) var(--spacing-sm);
+			border-radius: var(--radius-sm);
+			font-size: 0.75rem;
+			font-weight: 600;
+			background: oklch(0.9 0.05 20);
+			color: oklch(0.4 0.15 20);
+
+			&.subscribed {
+				background: oklch(0.9 0.1 145);
+				color: oklch(0.35 0.15 145);
+			}
 		}
 
 		.tableActions {
@@ -711,6 +743,25 @@
 				font-size: 1rem;
 				background: var(--backgroundColor);
 				color: var(--textColor);
+			}
+
+			&.checkboxGroup {
+				.checkboxLabel {
+					display: flex;
+					align-items: center;
+					gap: var(--spacing-sm);
+					cursor: pointer;
+
+					input[type='checkbox'] {
+						width: 1.25rem;
+						height: 1.25rem;
+						padding: 0;
+					}
+
+					span {
+						font-weight: normal;
+					}
+				}
 			}
 		}
 

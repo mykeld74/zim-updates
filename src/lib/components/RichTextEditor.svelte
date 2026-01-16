@@ -57,26 +57,6 @@
 		}, 100);
 	}
 
-	function handleKeyDown(e: KeyboardEvent) {
-		// Handle keyboard shortcuts
-		if (e.metaKey || e.ctrlKey) {
-			switch (e.key.toLowerCase()) {
-				case 'b':
-					e.preventDefault();
-					execCommand('bold');
-					break;
-				case 'i':
-					e.preventDefault();
-					execCommand('italic');
-					break;
-				case 'u':
-					e.preventDefault();
-					execCommand('underline');
-					break;
-			}
-		}
-	}
-
 	function insertHeading(level: number) {
 		execCommand('formatBlock', `h${level}`);
 	}
@@ -93,6 +73,100 @@
 		const url = prompt('Enter URL:');
 		if (url) {
 			execCommand('createLink', url);
+		}
+	}
+
+	function toggleBlockquote() {
+		const selection = window.getSelection();
+		if (!selection || selection.rangeCount === 0) return;
+
+		// Check if we're currently inside a blockquote
+		let node: Node | null = selection.anchorNode;
+		let inBlockquote = false;
+
+		while (node && node !== editorRef) {
+			if (node.nodeName === 'BLOCKQUOTE') {
+				inBlockquote = true;
+				break;
+			}
+			node = node.parentNode;
+		}
+
+		if (inBlockquote) {
+			// Remove blockquote by converting to paragraph
+			execCommand('formatBlock', 'p');
+		} else {
+			// Add blockquote
+			execCommand('formatBlock', 'blockquote');
+		}
+	}
+
+	function handleKeyDown(e: KeyboardEvent) {
+		// Handle Enter key inside blockquote
+		if (e.key === 'Enter' && !e.shiftKey) {
+			const selection = window.getSelection();
+			if (selection && selection.rangeCount > 0) {
+				let node: Node | null = selection.anchorNode;
+				let blockquote: HTMLElement | null = null;
+
+				// Find if we're in a blockquote
+				while (node && node !== editorRef) {
+					if (node.nodeName === 'BLOCKQUOTE') {
+						blockquote = node as HTMLElement;
+						break;
+					}
+					node = node.parentNode;
+				}
+
+				// If in blockquote and the current line is empty, exit blockquote
+				if (blockquote) {
+					const range = selection.getRangeAt(0);
+					const textContent = selection.anchorNode?.textContent || '';
+					
+					// Check if we're at an empty line or at the end with empty content
+					if (textContent.trim() === '' || (range.collapsed && textContent === '\n')) {
+						e.preventDefault();
+						
+						// Create a new paragraph after the blockquote
+						const p = document.createElement('p');
+						p.innerHTML = '<br>';
+						blockquote.parentNode?.insertBefore(p, blockquote.nextSibling);
+						
+						// Move cursor to the new paragraph
+						const newRange = document.createRange();
+						newRange.setStart(p, 0);
+						newRange.collapse(true);
+						selection.removeAllRanges();
+						selection.addRange(newRange);
+						
+						// Clean up empty blockquote content if needed
+						if (blockquote.textContent?.trim() === '') {
+							blockquote.remove();
+						}
+						
+						handleInput();
+						return;
+					}
+				}
+			}
+		}
+
+		// Handle keyboard shortcuts
+		if (e.metaKey || e.ctrlKey) {
+			switch (e.key.toLowerCase()) {
+				case 'b':
+					e.preventDefault();
+					execCommand('bold');
+					break;
+				case 'i':
+					e.preventDefault();
+					execCommand('italic');
+					break;
+				case 'u':
+					e.preventDefault();
+					execCommand('underline');
+					break;
+			}
 		}
 	}
 </script>
@@ -172,17 +246,17 @@
 		<div class="toolbarDivider"></div>
 
 		<div class="toolbarGroup">
-			<button type="button" onclick={insertLink} title="Insert Link" class="toolbarBtn">
-				🔗 Link
-			</button>
-			<button
-				type="button"
-				onclick={() => execCommand('formatBlock', 'blockquote')}
-				title="Quote"
-				class="toolbarBtn"
-			>
-				" Quote
-			</button>
+		<button type="button" onclick={insertLink} title="Insert Link" class="toolbarBtn">
+			🔗 Link
+		</button>
+		<button
+			type="button"
+			onclick={toggleBlockquote}
+			title="Quote (toggle)"
+			class="toolbarBtn"
+		>
+			" Quote
+		</button>
 		</div>
 	</div>
 

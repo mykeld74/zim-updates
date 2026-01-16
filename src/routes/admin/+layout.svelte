@@ -26,6 +26,7 @@
 		<a href="/admin/kids" class="navLink">Kids</a>
 		<a href="/admin/media" class="navLink">Media</a>
 		<a href="/admin/sponsors" class="navLink">Sponsors</a>
+		<a href="/admin/email" class="navLink">Email</a>
 		<a href="/admin/users" class="navLink">Users</a>
 	</nav>
 
