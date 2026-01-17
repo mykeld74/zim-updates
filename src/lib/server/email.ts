@@ -1,6 +1,5 @@
-import nodemailer from 'nodemailer';
-import type { Transporter } from 'nodemailer';
-import { GOOGLE_EMAIL, GOOGLE_EMAIL_PASSWORD } from '$env/static/private';
+import { Resend } from 'resend';
+import { RESEND_API_KEY, RESEND_FROM_EMAIL } from '$env/static/private';
 
 // ============================================================================
 // Types
@@ -26,52 +25,48 @@ export interface SendEmailResult {
 }
 
 // ============================================================================
-// Transporter Configuration
+// Resend Client
 // ============================================================================
 
-let transporter: Transporter | null = null;
+let resendClient: Resend | null = null;
 
-function getTransporter(): Transporter {
-	if (!transporter) {
-		if (!GOOGLE_EMAIL || !GOOGLE_EMAIL_PASSWORD) {
-			throw new Error(
-				'Gmail credentials not configured. Set GOOGLE_EMAIL and GOOGLE_EMAIL_PASSWORD in .env'
-			);
+function getResendClient(): Resend {
+	if (!resendClient) {
+		if (!RESEND_API_KEY) {
+			throw new Error('Resend API key not configured. Set RESEND_API_KEY in .env');
 		}
-
-		transporter = nodemailer.createTransport({
-			service: 'gmail',
-			auth: {
-				user: GOOGLE_EMAIL,
-				pass: GOOGLE_EMAIL_PASSWORD
-			}
-		});
+		resendClient = new Resend(RESEND_API_KEY);
 	}
+	return resendClient;
+}
 
-	return transporter;
+// Default from email - can be overridden in .env
+// For testing, use: onboarding@resend.dev
+// For production, use your verified domain: updates@yourdomain.com
+function getFromEmail(): string {
+	return RESEND_FROM_EMAIL || 'Zimbabwe Updates <onboarding@resend.dev>';
 }
 
 // ============================================================================
 // Email Sending Functions
 // ============================================================================
 
-// Gmail limits: ~100 recipients per email for BCC, 500/day for personal, 2000/day for Workspace
-const BATCH_SIZE = 50;
-
 export async function sendEmail(options: SendEmailOptions): Promise<SendEmailResult> {
 	try {
-		const transport = getTransporter();
+		const resend = getResendClient();
+
+		// Resend's batch API supports up to 100 emails per call
+		const batchSize = 100;
 		const allRecipients = options.to;
 
-		// If small enough, send in one batch
-		if (allRecipients.length <= BATCH_SIZE) {
-			return await sendBatch(transport, allRecipients, options);
+		if (allRecipients.length <= batchSize) {
+			return await sendBatch(resend, allRecipients, options);
 		}
 
-		// Otherwise, batch recipients to avoid Gmail limits
+		// Batch recipients for large lists
 		const batches: EmailRecipient[][] = [];
-		for (let i = 0; i < allRecipients.length; i += BATCH_SIZE) {
-			batches.push(allRecipients.slice(i, i + BATCH_SIZE));
+		for (let i = 0; i < allRecipients.length; i += batchSize) {
+			batches.push(allRecipients.slice(i, i + batchSize));
 		}
 
 		console.log(`Sending email to ${allRecipients.length} recipients in ${batches.length} batches`);
@@ -83,16 +78,11 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
 			const batch = batches[i];
 			console.log(`Sending batch ${i + 1}/${batches.length} (${batch.length} recipients)`);
 
-			const result = await sendBatch(transport, batch, options);
+			const result = await sendBatch(resend, batch, options);
 			results.push(result);
 
 			if (!result.success && result.failedRecipients) {
 				failedRecipients.push(...result.failedRecipients);
-			}
-
-			// Add a small delay between batches to avoid rate limiting
-			if (i < batches.length - 1) {
-				await new Promise((resolve) => setTimeout(resolve, 1000));
 			}
 		}
 
@@ -115,26 +105,36 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
 }
 
 async function sendBatch(
-	transport: Transporter,
+	resend: Resend,
 	recipients: EmailRecipient[],
 	options: SendEmailOptions
 ): Promise<SendEmailResult> {
 	try {
-		const toAddresses = recipients.map((r) => `"${r.name}" <${r.email}>`);
-
-		const mailOptions = {
-			from: `"Zimbabwe Updates" <${GOOGLE_EMAIL}>`,
-			bcc: toAddresses,
+		// Use Resend's batch API to send individual emails to each recipient
+		// This is better for deliverability and keeps recipients private
+		const emails = recipients.map((r) => ({
+			from: getFromEmail(),
+			replyTo: 'mikeandjacquid@gmail.com',
+			to: [`${r.name} <${r.email}>`],
 			subject: options.subject,
 			html: options.html,
 			text: options.text || stripHtml(options.html)
-		};
+		}));
 
-		const info = await transport.sendMail(mailOptions);
+		const { data, error } = await resend.batch.send(emails);
+
+		if (error) {
+			console.error('Resend error:', error);
+			return {
+				success: false,
+				error: error.message,
+				failedRecipients: recipients.map((r) => r.email)
+			};
+		}
 
 		return {
 			success: true,
-			messageId: info.messageId
+			messageId: data?.data?.[0]?.id
 		};
 	} catch (error) {
 		console.error('Error sending batch:', error);
