@@ -7,7 +7,7 @@ import { getUpdateById } from '$lib/server/updates';
 export const POST: RequestHandler = async ({ request, url }) => {
 	try {
 		const body = await request.json();
-		const { type, updateId, subject, content, recipientIds } = body;
+		const { type, updateId, subject, content, recipientIds, message } = body;
 
 		if (!type) {
 			return json({ error: 'Email type is required' }, { status: 400 });
@@ -52,7 +52,7 @@ export const POST: RequestHandler = async ({ request, url }) => {
 
 			// Build site URL
 			const siteUrl = `${url.protocol}//${url.host}`;
-			emailContent = generateUpdateAnnouncementEmail(update, siteUrl);
+			emailContent = generateUpdateAnnouncementEmail(update, siteUrl, message || undefined);
 		} else if (type === 'custom') {
 			// Custom email
 			if (!subject || !content) {

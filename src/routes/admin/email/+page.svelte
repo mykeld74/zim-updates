@@ -10,6 +10,7 @@
 
 	// Announcement form state
 	let selectedUpdateId = $state<string>('');
+	let announcementMessage = $state<string>('');
 	let announcementMode = $state<'subscribed' | 'select'>('subscribed');
 	let announcementRecipients = $state<string[]>([]);
 	let announcementSending = $state(false);
@@ -28,13 +29,17 @@
 	const selectedUpdate = $derived(data.updates.find((u: UpdatePost) => u.id === selectedUpdateId));
 
 	// Announcement computed
-	const announcementAllSelected = $derived(announcementRecipients.length === data.sponsors.length && data.sponsors.length > 0);
+	const announcementAllSelected = $derived(
+		announcementRecipients.length === data.sponsors.length && data.sponsors.length > 0
+	);
 	const announcementRecipientCount = $derived(
 		announcementMode === 'subscribed' ? subscribedCount : announcementRecipients.length
 	);
 
 	// Compose computed
-	const composeAllSelected = $derived(composeRecipients.length === data.sponsors.length && data.sponsors.length > 0);
+	const composeAllSelected = $derived(
+		composeRecipients.length === data.sponsors.length && data.sponsors.length > 0
+	);
 
 	// Announcement recipient functions
 	function toggleAnnouncementSelectAll() {
@@ -95,7 +100,8 @@
 		try {
 			const body: Record<string, unknown> = {
 				type: 'announcement',
-				updateId: selectedUpdateId
+				updateId: selectedUpdateId,
+				message: announcementMessage.trim() || null
 			};
 
 			// If select mode, send specific recipients
@@ -114,6 +120,7 @@
 			if (response.ok) {
 				announcementResult = { success: true, message: result.message };
 				selectedUpdateId = '';
+				announcementMessage = '';
 				announcementRecipients = [];
 			} else {
 				announcementResult = { success: false, message: result.error || 'Failed to send email' };
@@ -201,12 +208,14 @@
 			<div class="composeGrid">
 				<div class="card">
 					<h3>Send Update Announcement</h3>
-					<p class="cardDescription">
-						Notify sponsors about a new update.
-					</p>
+					<p class="cardDescription">Notify sponsors about a new update.</p>
 
 					{#if announcementResult}
-						<div class="resultBanner" class:success={announcementResult.success} class:error={!announcementResult.success}>
+						<div
+							class="resultBanner"
+							class:success={announcementResult.success}
+							class:error={!announcementResult.success}
+						>
 							{announcementResult.message}
 						</div>
 					{/if}
@@ -222,8 +231,18 @@
 					</div>
 
 					{#if selectedUpdate}
+						<div class="formGroup">
+							<label for="announcementMessage">Message (optional)</label>
+							<p class="fieldHint">Add a personal note that appears before the update details</p>
+							<RichTextEditor
+								content={announcementMessage}
+								onchange={(html) => (announcementMessage = html)}
+								placeholder="e.g., Dear sponsors, we're excited to share this update with you..."
+							/>
+						</div>
+
 						<div class="updatePreview">
-							<h4>Preview</h4>
+							<h4>Update Preview</h4>
 							<div class="previewCard">
 								<strong>{selectedUpdate.title}</strong>
 								{#if selectedUpdate.excerpt}
@@ -237,12 +256,16 @@
 					<button
 						class="primaryButton"
 						onclick={sendAnnouncement}
-						disabled={announcementSending || !selectedUpdateId || (announcementMode === 'select' && announcementRecipients.length === 0)}
+						disabled={announcementSending ||
+							!selectedUpdateId ||
+							(announcementMode === 'select' && announcementRecipients.length === 0)}
 					>
 						{#if announcementSending}
 							Sending...
 						{:else}
-							Send to {announcementRecipientCount} Recipient{announcementRecipientCount !== 1 ? 's' : ''}
+							Send to {announcementRecipientCount} Recipient{announcementRecipientCount !== 1
+								? 's'
+								: ''}
 						{/if}
 					</button>
 				</div>
@@ -284,7 +307,10 @@
 
 						<div class="recipientList">
 							{#each data.sponsors as sponsor (sponsor.id)}
-								<label class="recipientItem" class:selected={announcementRecipients.includes(sponsor.id)}>
+								<label
+									class="recipientItem"
+									class:selected={announcementRecipients.includes(sponsor.id)}
+								>
 									<input
 										type="checkbox"
 										checked={announcementRecipients.includes(sponsor.id)}
@@ -319,7 +345,11 @@
 					<h3>Compose Email</h3>
 
 					{#if composeResult}
-						<div class="resultBanner" class:success={composeResult.success} class:error={!composeResult.success}>
+						<div
+							class="resultBanner"
+							class:success={composeResult.success}
+							class:error={!composeResult.success}
+						>
 							{composeResult.message}
 						</div>
 					{/if}
@@ -334,14 +364,14 @@
 						/>
 					</div>
 
-				<div class="formGroup">
-					<label for="content">Message</label>
-					<RichTextEditor
-						content={composeContent}
-						onchange={(html) => (composeContent = html)}
-						placeholder="Write your message here..."
-					/>
-				</div>
+					<div class="formGroup">
+						<label for="content">Message</label>
+						<RichTextEditor
+							content={composeContent}
+							onchange={(html) => (composeContent = html)}
+							placeholder="Write your message here..."
+						/>
+					</div>
 
 					<button
 						class="primaryButton"
@@ -351,7 +381,9 @@
 						{#if composeSending}
 							Sending...
 						{:else}
-							Send to {composeRecipients.length} Recipient{composeRecipients.length !== 1 ? 's' : ''}
+							Send to {composeRecipients.length} Recipient{composeRecipients.length !== 1
+								? 's'
+								: ''}
 						{/if}
 					</button>
 				</div>
@@ -506,6 +538,11 @@
 			}
 		}
 
+		.fieldHint {
+			color: var(--textMuted);
+			font-size: 0.875rem;
+			margin: var(--spacing-xs) 0 var(--spacing-sm);
+		}
 	}
 
 	.updatePreview {
