@@ -36,6 +36,12 @@
 	];
 </script>
 
+<svelte:head>
+	<title>Admin Dashboard - Zim Updates</title>
+	<meta name="description" content="Manage your Zim Updates content from the admin dashboard." />
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="dashboard">
 	<div class="welcomeSection">
 		<h2>Welcome back, {data.user?.name || 'Admin'}!</h2>

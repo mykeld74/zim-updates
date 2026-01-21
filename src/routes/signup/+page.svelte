@@ -45,6 +45,12 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Create Account - Zim Updates</title>
+	<meta name="description" content="Sign up to access the Zim Updates admin panel." />
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="signupContainer">
 	<div class="signupCard">
 		<h1>Create Account</h1>

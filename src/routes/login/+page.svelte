@@ -43,6 +43,12 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Admin Login - Zim Updates</title>
+	<meta name="description" content="Sign in to access the Zim Updates admin panel." />
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="loginContainer">
 	<div class="loginCard">
 		<h1>Admin Login</h1>

@@ -90,8 +90,13 @@
 </script>
 
 <svelte:head>
-	<title>Zim Updates</title>
-	<meta name="description" content="Stay connected with our friends in Zimbabwe." />
+	<title>Zim Updates - Stay Connected with Our Friends in Zimbabwe</title>
+	<meta name="description" content="Stay connected with our friends in Zimbabwe. Latest news and updates from our community." />
+	<meta property="og:title" content="Zim Updates - Stay Connected with Our Friends in Zimbabwe" />
+	<meta property="og:description" content="Stay connected with our friends in Zimbabwe. Latest news and updates from our community." />
+	<meta property="og:url" content="https://zim-updates.com" />
+	<meta name="twitter:title" content="Zim Updates - Stay Connected with Our Friends in Zimbabwe" />
+	<meta name="twitter:description" content="Stay connected with our friends in Zimbabwe. Latest news and updates from our community." />
 </svelte:head>
 
 <div class="fullScreen">

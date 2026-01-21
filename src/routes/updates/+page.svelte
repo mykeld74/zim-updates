@@ -5,6 +5,16 @@
 	const { data } = $props();
 </script>
 
+<svelte:head>
+	<title>Updates - Zim Updates</title>
+	<meta name="description" content="Latest news and stories from our friends in Zimbabwe. Browse all updates and stay connected with our community." />
+	<meta property="og:title" content="Updates - Zim Updates" />
+	<meta property="og:description" content="Latest news and stories from our friends in Zimbabwe. Browse all updates and stay connected with our community." />
+	<meta property="og:url" content="https://zim-updates.com/updates" />
+	<meta name="twitter:title" content="Updates - Zim Updates" />
+	<meta name="twitter:description" content="Latest news and stories from our friends in Zimbabwe. Browse all updates and stay connected with our community." />
+</svelte:head>
+
 <div class="updatesContainer">
 	<header class="updatesHeader">
 		<h1>Updates</h1>

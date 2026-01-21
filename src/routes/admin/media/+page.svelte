@@ -26,6 +26,12 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Media Management - Admin - Zim Updates</title>
+	<meta name="description" content="Upload and manage images with Cloudinary in the admin panel." />
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="pageWrapper">
 	<h1>Upload Images to Cloudinary</h1>
 

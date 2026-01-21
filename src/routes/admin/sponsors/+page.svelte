@@ -178,6 +178,12 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Sponsors Management - Admin - Zim Updates</title>
+	<meta name="description" content="Manage sponsor information and relationships in the admin panel." />
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="adminPage">
 	<div class="header">
 		<div>

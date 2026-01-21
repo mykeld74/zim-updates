@@ -176,6 +176,12 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Email Center - Admin - Zim Updates</title>
+	<meta name="description" content="Manage email templates and send emails to sponsors from the admin panel." />
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="adminPage">
 	<div class="header">
 		<div>

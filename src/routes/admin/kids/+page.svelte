@@ -185,6 +185,12 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Kids Management - Admin - Zim Updates</title>
+	<meta name="description" content="Manage kids information and profiles in the admin panel." />
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="adminPage">
 	<div class="header">
 		<div>

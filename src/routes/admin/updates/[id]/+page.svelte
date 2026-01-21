@@ -113,6 +113,12 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Edit Update - Admin - Zim Updates</title>
+	<meta name="description" content="Edit update post in the admin panel." />
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="editorPage">
 	<div class="editorHeader">
 		<a href="/admin/updates" class="backLink">← Back to Updates</a>

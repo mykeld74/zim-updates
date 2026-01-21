@@ -69,6 +69,12 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Updates Management - Admin - Zim Updates</title>
+	<meta name="description" content="Create and manage blog posts and updates in the admin panel." />
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="updatesPage">
 	<div class="header">
 		<div>

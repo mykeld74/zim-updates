@@ -1,13 +1,46 @@
 <script lang="ts">
 	import { AdminImage, BlockRenderer } from '$lib';
-	import { formatDate, renderLexicalContent } from '$lib/utils';
+	import { formatDate, renderLexicalContent, sanitizeText, truncate } from '$lib/utils';
 
 	const { data } = $props();
 	const post = $derived(data.post);
 
 	const useBlocks = $derived(post.layout && post.layout.length > 0);
 	const featuredImageSrc = $derived(post.featuredImage || post.featured_image);
+	
+	const metaDescription = $derived(
+		post.excerpt 
+			? truncate(sanitizeText(post.excerpt), 160)
+			: 'Read the latest update from our friends in Zimbabwe.'
+	);
+	const ogImage = $derived(
+		featuredImageSrc 
+			? `https://res.cloudinary.com/bigbeardeddev/image/upload/${featuredImageSrc}`
+			: undefined
+	);
+	const pageUrl = $derived(`https://zim-updates.com/updates/${post.slug}`);
 </script>
+
+<svelte:head>
+	<title>{post.title} - Zim Updates</title>
+	<meta name="description" content={metaDescription} />
+	<meta property="og:title" content={post.title} />
+	<meta property="og:description" content={metaDescription} />
+	<meta property="og:type" content="article" />
+	<meta property="og:url" content={pageUrl} />
+	{#if ogImage}
+		<meta property="og:image" content={ogImage} />
+	{/if}
+	<meta name="twitter:title" content={post.title} />
+	<meta name="twitter:description" content={metaDescription} />
+	{#if ogImage}
+		<meta name="twitter:image" content={ogImage} />
+	{/if}
+	<meta name="article:published_time" content={post.createdAt?.toISOString()} />
+	{#if post.author}
+		<meta name="article:author" content={post.author} />
+	{/if}
+</svelte:head>
 
 <article class="postContainer">
 	<header class="postHeader">

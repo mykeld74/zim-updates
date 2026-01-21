@@ -34,6 +34,12 @@
 	const approvedUsers = $derived(data.users.filter((u) => u.approved));
 </script>
 
+<svelte:head>
+	<title>User Management - Admin - Zim Updates</title>
+	<meta name="description" content="Manage user accounts and approvals in the admin panel." />
+	<meta name="robots" content="noindex, nofollow" />
+</svelte:head>
+
 <div class="usersPage">
 	<h1>User Management</h1>
 

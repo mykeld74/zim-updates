@@ -9,6 +9,11 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="description" content="Stay connected with our friends in Zimbabwe. Latest news and updates from our community." />
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="Zim Updates" />
+	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
 <div class="appLayout">
