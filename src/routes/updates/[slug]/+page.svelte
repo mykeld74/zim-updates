@@ -36,7 +36,9 @@
 	{#if ogImage}
 		<meta name="twitter:image" content={ogImage} />
 	{/if}
-	<meta name="article:published_time" content={post.createdAt?.toISOString()} />
+	{#if post.createdAt}
+		<meta name="article:published_time" content={post.createdAt} />
+	{/if}
 	{#if post.author}
 		<meta name="article:author" content={post.author} />
 	{/if}
