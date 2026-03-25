@@ -422,6 +422,7 @@
 
 					<div class="recipientList">
 						{#each data.sponsors as sponsor (sponsor.id)}
+							{@const kidsLabel = sponsoredKidsLabel(sponsor)}
 							<label class="recipientItem" class:selected={composeRecipients.includes(sponsor.id)}>
 								<input
 									type="checkbox"
@@ -431,6 +432,9 @@
 								<div class="recipientInfo">
 									<span class="recipientName">{sponsor.firstName} {sponsor.lastName}</span>
 									<span class="recipientEmail">{sponsor.email}</span>
+									{#if kidsLabel}
+										<span class="recipientKids">Sponsoring: {kidsLabel}</span>
+									{/if}
 								</div>
 								{#if sponsor.subscribed}
 									<span class="subscribedBadge">Subscribed</span>
