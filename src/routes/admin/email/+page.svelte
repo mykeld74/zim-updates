@@ -83,6 +83,11 @@
 		composeRecipients = subscribedSponsors.map((s: SponsorWithKids) => s.id);
 	}
 
+	function sponsoredKidsLabel(sponsor: SponsorWithKids): string {
+		const names = sponsor.kids?.map((k) => k.name).filter(Boolean) ?? [];
+		return names.join(', ');
+	}
+
 	async function sendAnnouncement() {
 		if (!selectedUpdateId) {
 			announcementResult = { success: false, message: 'Please select an update to announce' };
@@ -313,6 +318,7 @@
 
 						<div class="recipientList">
 							{#each data.sponsors as sponsor (sponsor.id)}
+								{@const kidsLabel = sponsoredKidsLabel(sponsor)}
 								<label
 									class="recipientItem"
 									class:selected={announcementRecipients.includes(sponsor.id)}
@@ -325,6 +331,9 @@
 									<div class="recipientInfo">
 										<span class="recipientName">{sponsor.firstName} {sponsor.lastName}</span>
 										<span class="recipientEmail">{sponsor.email}</span>
+										{#if kidsLabel}
+											<span class="recipientKids">Sponsoring: {kidsLabel}</span>
+										{/if}
 									</div>
 									{#if sponsor.subscribed}
 										<span class="subscribedBadge">Subscribed</span>
@@ -771,6 +780,15 @@
 				overflow: hidden;
 				text-overflow: ellipsis;
 				white-space: nowrap;
+			}
+
+			.recipientKids {
+				display: block;
+				color: var(--primaryColor);
+				font-size: 0.6875rem;
+				font-weight: 600;
+				margin-top: var(--spacing-xs);
+				line-height: 1.3;
 			}
 		}
 
