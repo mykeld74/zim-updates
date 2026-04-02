@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatKidDisplayName } from '$lib';
 	import type { SponsorWithKids, Kid } from '$lib/server/sponsors';
 	import { invalidateAll } from '$app/navigation';
 
@@ -278,7 +279,7 @@
 								{#if sponsor.kids.length > 0}
 									<div class="kidsList">
 										{#each sponsor.kids as kid}
-											<span class="kidBadge">{kid.name}</span>
+											<span class="kidBadge">{formatKidDisplayName(kid.name, kid.nickname)}</span>
 										{/each}
 									</div>
 								{:else}
@@ -373,7 +374,7 @@
 									checked={formData.kidIds.includes(kid.id)}
 									onchange={() => toggleKid(kid.id)}
 								/>
-								<span>{kid.name}</span>
+								<span>{formatKidDisplayName(kid.name, kid.nickname)}</span>
 							</label>
 						{/each}
 					</div>

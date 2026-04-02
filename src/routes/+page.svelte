@@ -91,12 +91,21 @@
 
 <svelte:head>
 	<title>Zim Updates - Stay Connected with Our Friends in Zimbabwe</title>
-	<meta name="description" content="Stay connected with our friends in Zimbabwe. Latest news and updates from our community." />
+	<meta
+		name="description"
+		content="Stay connected with our friends in Zimbabwe. Latest news and updates from our community."
+	/>
 	<meta property="og:title" content="Zim Updates - Stay Connected with Our Friends in Zimbabwe" />
-	<meta property="og:description" content="Stay connected with our friends in Zimbabwe. Latest news and updates from our community." />
+	<meta
+		property="og:description"
+		content="Stay connected with our friends in Zimbabwe. Latest news and updates from our community."
+	/>
 	<meta property="og:url" content="https://zim-updates.com" />
 	<meta name="twitter:title" content="Zim Updates - Stay Connected with Our Friends in Zimbabwe" />
-	<meta name="twitter:description" content="Stay connected with our friends in Zimbabwe. Latest news and updates from our community." />
+	<meta
+		name="twitter:description"
+		content="Stay connected with our friends in Zimbabwe. Latest news and updates from our community."
+	/>
 </svelte:head>
 
 <div class="fullScreen">
@@ -131,7 +140,6 @@
 							<h3>{featuredPost.title}</h3>
 							<p>{getExcerpt(featuredPost)}</p>
 							<div class="featuredMeta">
-								<span>{featuredPost.author}</span>
 								<span>{formatDate(featuredPost.createdAt || featuredPost.created_at)}</span>
 							</div>
 						</div>
@@ -155,7 +163,6 @@
 										<h4>{post.title}</h4>
 										<p class="excerpt">{getExcerpt(post)}</p>
 										<div class="recentMeta">
-											<span>{post.author}</span>
 											<span>{formatDate(post.createdAt || post.created_at)}</span>
 										</div>
 									</div>

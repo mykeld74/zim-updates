@@ -13,7 +13,8 @@
 		const urlParams = new URLSearchParams(window.location.search);
 		const message = urlParams.get('message');
 		if (message === 'pending') {
-			pendingMessage = 'Your account is pending approval. Please wait for an admin to approve your access.';
+			pendingMessage =
+				'Your account is pending approval. Please wait for an admin to approve your access.';
 		}
 	});
 
@@ -31,9 +32,7 @@
 			if (result.error) {
 				error = result.error.message || 'Login failed';
 			} else {
-				// Check approval status by attempting to access admin
-				// The hooks will redirect if not approved
-				goto('/admin');
+					goto('/admin');
 			}
 		} catch (err) {
 			error = 'An unexpected error occurred';

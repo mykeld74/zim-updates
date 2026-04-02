@@ -3,13 +3,35 @@
 		source: string;
 		altTag: string;
 		width?: string;
+		height?: string;
+		faceCrop?: boolean;
+		faceZoom?: string;
 		class?: string;
 	}
 
-	let { source, altTag, width = 'auto', class: className = '' }: Props = $props();
-
+	let {
+		source,
+		altTag,
+		width = 'auto',
+		height = 'auto',
+		faceCrop = false,
+		faceZoom = '1.4',
+		class: className = ''
+	}: Props = $props();
+	const normalizedSource = $derived(source?.trim() || '');
+	const transform = $derived.by(() => {
+		const parts = ['f_auto', 'q_auto'];
+		if (width !== 'auto') parts.push(`w_${width}`);
+		if (height !== 'auto') parts.push(`h_${height}`);
+		if (faceCrop && width !== 'auto' && height !== 'auto') {
+			parts.push('c_thumb', 'g_face', `z_${faceZoom}`);
+		}
+		return parts.join(',');
+	});
 	const imageUrl = $derived(
-		`https://res.cloudinary.com/bigbeardeddev/image/upload/f_auto,q_auto,w_${width}/v1/${source}`
+		normalizedSource.startsWith('http://') || normalizedSource.startsWith('https://')
+			? normalizedSource
+			: `https://res.cloudinary.com/bigbeardeddev/image/upload/${transform}/${normalizedSource}`
 	);
 </script>
 

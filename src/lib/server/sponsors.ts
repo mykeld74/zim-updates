@@ -18,9 +18,16 @@ export interface Sponsor {
 export interface Kid {
 	id: string;
 	name: string;
+	nickname?: string | null;
+	tagline?: string | null;
 	birthday?: Date | null;
 	gender?: string | null;
 	image?: string | null;
+	description?: string | null;
+	featuredImage?: string | null;
+	images: string[];
+	archived: boolean;
+	archiveReason?: string | null;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -47,9 +54,16 @@ interface SponsorUpdateData {
 // Type for partial kid updates
 interface KidUpdateData {
 	name?: string;
+	nickname?: string | null;
+	tagline?: string | null;
 	birthday?: Date | null;
 	gender?: string | null;
 	image?: string | null;
+	description?: string | null;
+	featuredImage?: string | null;
+	images?: string[];
+	archived?: boolean;
+	archiveReason?: string | null;
 	updatedAt: Date;
 }
 
@@ -103,9 +117,16 @@ export async function getSponsorById(id: string): Promise<SponsorWithKids | null
 		.select({
 			id: kid.id,
 			name: kid.name,
+			nickname: kid.nickname,
+			tagline: kid.tagline,
 			birthday: kid.birthday,
 			gender: kid.gender,
 			image: kid.image,
+			description: kid.description,
+			featuredImage: kid.featuredImage,
+			images: kid.images,
+			archived: kid.archived,
+			archiveReason: kid.archiveReason,
 			createdAt: kid.createdAt,
 			updatedAt: kid.updatedAt
 		})
@@ -129,9 +150,16 @@ export async function getAllSponsors(): Promise<SponsorWithKids[]> {
 			kid: {
 				id: kid.id,
 				name: kid.name,
+				nickname: kid.nickname,
+				tagline: kid.tagline,
 				birthday: kid.birthday,
 				gender: kid.gender,
 				image: kid.image,
+				description: kid.description,
+				featuredImage: kid.featuredImage,
+				images: kid.images,
+				archived: kid.archived,
+				archiveReason: kid.archiveReason,
 				createdAt: kid.createdAt,
 				updatedAt: kid.updatedAt
 			}
@@ -199,9 +227,14 @@ export async function deleteSponsor(id: string) {
 // Kid CRUD operations
 export async function createKid(data: {
 	name: string;
+	nickname?: string | null;
+	tagline?: string | null;
 	birthday?: Date;
 	gender?: string;
 	image?: string;
+	description?: string | null;
+	featuredImage?: string | null;
+	images?: string[];
 	sponsorIds?: string[];
 }) {
 	const now = new Date();
@@ -211,9 +244,16 @@ export async function createKid(data: {
 	await db.insert(kid).values({
 		id: kidId,
 		name: data.name,
+		nickname: data.nickname?.trim() || null,
+		tagline: data.tagline || null,
 		birthday: data.birthday || null,
 		gender: data.gender || null,
 		image: data.image || null,
+		description: data.description || null,
+		featuredImage: data.featuredImage || data.image || null,
+		images: data.images ?? [],
+		archived: false,
+		archiveReason: null,
 		createdAt: now,
 		updatedAt: now
 	});
@@ -293,10 +333,17 @@ export async function updateKid(
 	id: string,
 	data: {
 		name?: string;
+		nickname?: string | null;
+		tagline?: string | null;
 		birthday?: Date | null;
 		gender?: string | null;
 		image?: string | null;
+		description?: string | null;
+		featuredImage?: string | null;
+		images?: string[];
 		sponsorIds?: string[];
+		archived?: boolean;
+		archiveReason?: string | null;
 	}
 ) {
 	const now = new Date();
@@ -304,9 +351,23 @@ export async function updateKid(
 	// Update kid basic info
 	const updateData: KidUpdateData = { updatedAt: now };
 	if (data.name !== undefined) updateData.name = data.name;
+	if (data.nickname !== undefined) updateData.nickname = data.nickname;
+	if (data.tagline !== undefined) updateData.tagline = data.tagline;
 	if (data.birthday !== undefined) updateData.birthday = data.birthday;
 	if (data.gender !== undefined) updateData.gender = data.gender;
 	if (data.image !== undefined) updateData.image = data.image;
+	if (data.description !== undefined) updateData.description = data.description;
+	if (data.featuredImage !== undefined) updateData.featuredImage = data.featuredImage;
+	if (data.images !== undefined) updateData.images = data.images;
+	if (data.archived === false) {
+		updateData.archived = false;
+		updateData.archiveReason = null;
+	} else if (data.archived === true) {
+		updateData.archived = true;
+		if (data.archiveReason !== undefined) updateData.archiveReason = data.archiveReason;
+	} else if (data.archiveReason !== undefined) {
+		updateData.archiveReason = data.archiveReason;
+	}
 
 	await db.update(kid).set(updateData).where(eq(kid.id, id));
 

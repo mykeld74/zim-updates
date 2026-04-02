@@ -1,19 +1,22 @@
-import { auth } from '$lib/server/auth';
+import { auth, svelteKitHandler } from '$lib/server/auth';
 import { redirect, type Handle } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
+import { building } from '$app/environment';
 import { db } from '$lib/server/db';
 import { user as userTable } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
-export const handle: Handle = async ({ event, resolve }) => {
+const authHandler: Handle = async ({ event, resolve }) => {
+	return svelteKitHandler({ event, resolve, auth, building });
+};
+
+const guardHandler: Handle = async ({ event, resolve }) => {
 	const sessionData = await auth.api.getSession({
 		headers: event.request.headers
 	});
 
 	event.locals.session = sessionData?.session ?? null;
-	// Set initial user without approved status (will be set later if needed)
-	event.locals.user = sessionData?.user
-		? { ...sessionData.user, approved: false }
-		: null;
+	event.locals.user = sessionData?.user ? { ...sessionData.user, approved: false } : null;
 
 	// Protect admin routes
 	if (event.url.pathname.startsWith('/admin')) {
@@ -41,3 +44,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	return resolve(event);
 };
+
+export const handle = sequence(authHandler, guardHandler);

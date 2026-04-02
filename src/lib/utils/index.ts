@@ -227,6 +227,16 @@ export function renderLexicalContent(content: LexicalContent | null | undefined)
 }
 
 // ============================================================================
+// Kid display
+// ============================================================================
+
+/** Visible label: `Name` or `Name (nickname)` when nickname is set. */
+export function formatKidDisplayName(name: string, nickname?: string | null): string {
+	const n = nickname?.trim();
+	return n ? `${name} (${n})` : name;
+}
+
+// ============================================================================
 // Type exports for external use
 // ============================================================================
 

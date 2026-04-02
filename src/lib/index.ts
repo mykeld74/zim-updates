@@ -12,6 +12,7 @@ export type { Block, UpdatePost } from './server/updates';
 export {
 	formatDate,
 	formatDateShort,
+	formatKidDisplayName,
 	generateId,
 	sanitizeText,
 	truncate,

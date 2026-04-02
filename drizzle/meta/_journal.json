@@ -43,6 +43,34 @@
       "when": 1768501804099,
       "tag": "0005_bored_apocalypse",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1775040000000,
+      "tag": "0006_tidy_kid_profiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1775126400000,
+      "tag": "0007_kid_tagline",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1775212800000,
+      "tag": "0008_kid_archive",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1775299200000,
+      "tag": "0009_kid_nickname",
+      "breakpoints": true
     }
   ]
 }

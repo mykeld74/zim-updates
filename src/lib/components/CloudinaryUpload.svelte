@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { getFullPublicId, sanitizePublicId } from '$lib/cloudinaryPublicId';
+
 	interface Props {
 		folder?: string;
 		tags?: string[];
@@ -9,36 +11,104 @@
 
 	let uploading = $state(false);
 	let error = $state<string | null>(null);
+	let warning = $state<string | null>(null);
+	let selectedFile = $state<File | null>(null);
+	let imageName = $state('');
+	let existingPublicIds = $state<string[]>([]);
 	let fileInput: HTMLInputElement;
 
-	async function handleUpload(event: Event) {
+	function fullPublicIdForCompare(baseName: string): string {
+		return getFullPublicId(baseName, folder);
+	}
+
+	function collidesWithExisting(baseName: string): boolean {
+		const target = fullPublicIdForCompare(baseName).toLowerCase();
+		return existingPublicIds.some((id) => id.toLowerCase() === target);
+	}
+
+	async function loadExistingPublicIds() {
+		const folderParam = folder ? `?folder=${encodeURIComponent(folder)}` : '';
+		const response = await fetch(`/api/cloudinary/images${folderParam}`);
+		if (!response.ok) return;
+		const data = await response.json();
+		existingPublicIds = (data.images || []).map((img: { publicId: string }) => img.publicId);
+	}
+
+	async function handleFileSelect(event: Event) {
 		const target = event.target as HTMLInputElement;
 		const file = target.files?.[0];
 		if (!file) return;
 
+		selectedFile = file;
+		imageName = sanitizePublicId(file.name);
+		error = null;
+		warning = null;
+
+		await loadExistingPublicIds();
+		if (collidesWithExisting(imageName)) {
+			warning =
+				'An image with this name already exists in Cloudinary. Rename it before uploading.';
+		}
+	}
+
+	async function uploadSelectedFile() {
+		if (!selectedFile) {
+			error = 'Please select an image first';
+			return;
+		}
+		if (!imageName.trim()) {
+			error = 'Please enter a valid image name';
+			return;
+		}
+
+		if (collidesWithExisting(imageName)) {
+			warning =
+				'This image name already exists. Please change the name before uploading.';
+			return;
+		}
+
+		const canonicalPublicId = sanitizePublicId(imageName);
+		if (!canonicalPublicId) {
+			error = 'Please enter a valid image name';
+			return;
+		}
+
 		uploading = true;
 		error = null;
+		warning = null;
 
 		try {
 			// Get signed upload params from our server
 			const signResponse = await fetch('/api/cloudinary/sign-upload', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ folder, tags })
+				body: JSON.stringify({ folder, tags, public_id: canonicalPublicId })
 			});
 
-			if (!signResponse.ok) throw new Error('Failed to get upload signature');
+			if (!signResponse.ok) {
+				let msg = 'Failed to get upload signature';
+				try {
+					const errBody = await signResponse.json();
+					if (errBody?.message && typeof errBody.message === 'string') {
+						msg = errBody.message;
+					}
+				} catch {
+					/* use default */
+				}
+				throw new Error(msg);
+			}
 
 			const { signature, timestamp, apiKey, cloudName } = await signResponse.json();
 
 			// Upload to Cloudinary
 			const formData = new FormData();
-			formData.append('file', file);
+			formData.append('file', selectedFile);
 			formData.append('signature', signature);
 			formData.append('timestamp', timestamp.toString());
 			formData.append('api_key', apiKey);
 			if (folder) formData.append('folder', folder);
 			if (tags && tags.length) formData.append('tags', tags.join(','));
+			formData.append('public_id', canonicalPublicId);
 
 			const uploadResponse = await fetch(
 				`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
@@ -55,6 +125,8 @@
 
 			// Reset input
 			if (fileInput) fileInput.value = '';
+			selectedFile = null;
+			imageName = '';
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Upload failed';
 		} finally {
@@ -75,10 +147,22 @@
 		id="cloudinary-upload"
 		type="file"
 		accept="image/*"
-		onchange={handleUpload}
+		onchange={handleFileSelect}
 		disabled={uploading}
 		bind:this={fileInput}
 	/>
+	{#if selectedFile}
+		<div class="nameEditor">
+			<label for="imageName">Image name</label>
+			<input id="imageName" type="text" bind:value={imageName} disabled={uploading} />
+			<button type="button" class="uploadButton" onclick={uploadSelectedFile} disabled={uploading}>
+				{uploading ? 'Uploading...' : 'Upload image'}
+			</button>
+		</div>
+	{/if}
+	{#if warning}
+		<p class="warning">{warning}</p>
+	{/if}
 	{#if error}
 		<p class="error">{error}</p>
 	{/if}
@@ -120,6 +204,35 @@
 
 	.uploadText {
 		font-weight: 500;
+	}
+
+	.nameEditor {
+		display: grid;
+		gap: var(--spacing-xs);
+	}
+
+	.nameEditor input {
+		padding: var(--spacing-sm);
+		border: 1px solid var(--borderColor);
+		border-radius: var(--radius-sm);
+		background: var(--backgroundColor);
+		color: var(--textColor);
+	}
+
+	.uploadButton {
+		padding: var(--spacing-sm) var(--spacing-md);
+		border: none;
+		border-radius: var(--radius-sm);
+		background: var(--primaryColor);
+		color: var(--contrastColor);
+		cursor: pointer;
+		font-weight: 600;
+	}
+
+	.warning {
+		color: oklch(0.45 0.14 80);
+		font-size: 0.875rem;
+		margin: 0;
 	}
 
 	.error {

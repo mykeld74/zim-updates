@@ -27,6 +27,11 @@
 		<li class="navItem">
 			<a href="/updates" class="navLink" class:active={currentPath === '/updates'}> Updates </a>
 		</li>
+		<li class="navItem">
+			<a href="/prayer-sponsor" class="navLink" class:active={currentPath === '/prayer-sponsor'}>
+				Prayer Sponsor
+			</a>
+		</li>
 		{#if isLoggedIn}
 			<li class="navItem">
 				<a href="/admin" class="navLink" class:active={currentPath === '/admin'}> Admin </a>

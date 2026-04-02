@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatKidDisplayName } from '$lib';
 	import type { SponsorWithKids } from '$lib/server/sponsors';
 	import type { UpdatePost } from '$lib/server/updates';
 	import RichTextEditor from '$lib/components/RichTextEditor.svelte';
@@ -84,7 +85,8 @@
 	}
 
 	function sponsoredKidsLabel(sponsor: SponsorWithKids): string {
-		const names = sponsor.kids?.map((k) => k.name).filter(Boolean) ?? [];
+		const names =
+			sponsor.kids?.map((k) => formatKidDisplayName(k.name, k.nickname)).filter(Boolean) ?? [];
 		return names.join(', ');
 	}
 

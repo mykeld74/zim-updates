@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, boolean, primaryKey, jsonb } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { relations } from 'drizzle-orm';
 
 export const user = pgTable('user', {
@@ -67,9 +68,16 @@ export const sponsor = pgTable('sponsor', {
 export const kid = pgTable('kid', {
 	id: text('id').primaryKey(),
 	name: text('name').notNull(),
+	nickname: text('nickname'),
+	tagline: text('tagline'),
 	birthday: timestamp('birthday'),
 	gender: text('gender'),
 	image: text('image'),
+	description: text('description'),
+	featuredImage: text('featuredImage'),
+	images: jsonb('images').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+	archived: boolean('archived').notNull().default(false),
+	archiveReason: text('archiveReason'),
 	createdAt: timestamp('createdAt').notNull(),
 	updatedAt: timestamp('updatedAt').notNull()
 });

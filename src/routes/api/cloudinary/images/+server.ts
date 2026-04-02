@@ -4,10 +4,15 @@ import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
 import { user as userTable } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
+import { dev } from '$app/environment';
 
 async function requireApprovedUser(locals: App.Locals) {
 	if (!locals.user) {
 		throw error(401, 'Unauthorized');
+	}
+
+	if (dev) {
+		return;
 	}
 
 	const currentUser = await db.query.user.findFirst({

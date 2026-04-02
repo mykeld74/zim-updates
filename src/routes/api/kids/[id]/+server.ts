@@ -44,10 +44,27 @@ export const PUT: RequestHandler = async ({ params, request, locals }) => {
 
 		const kid = await updateKid(params.id, {
 			name: data.name,
+			nickname:
+				data.nickname === undefined
+					? undefined
+					: typeof data.nickname === 'string'
+						? data.nickname.trim() || null
+						: null,
+			tagline: data.tagline,
 			birthday: data.birthday ? new Date(data.birthday) : data.birthday === null ? null : undefined,
 			gender: data.gender,
 			image: data.image,
-			sponsorIds: data.sponsorIds
+			description: data.description,
+			featuredImage: data.featuredImage,
+			images: Array.isArray(data.images) ? data.images : undefined,
+			sponsorIds: data.sponsorIds,
+			archived: typeof data.archived === 'boolean' ? data.archived : undefined,
+			archiveReason:
+				data.archiveReason === null
+					? null
+					: typeof data.archiveReason === 'string'
+						? data.archiveReason
+						: undefined
 		});
 
 		if (!kid) {

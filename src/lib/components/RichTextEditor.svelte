@@ -1,50 +1,141 @@
 <script lang="ts">
-	import { onMount, tick } from 'svelte';
+	import { onMount, tick, untrack } from 'svelte';
 
 	interface Props {
 		content: string;
 		onchange?: (html: string) => void;
 		placeholder?: string;
+		forceWhiteText?: boolean;
 	}
 
-	let { content = '', onchange, placeholder = 'Start writing...' }: Props = $props();
+	let { content = '', onchange, placeholder = 'Start writing...', forceWhiteText = false }: Props =
+		$props();
 
 	let editorRef: HTMLDivElement;
 	let isFocused = $state(false);
 	let isUserEditing = $state(false);
 	let initialized = $state(false);
+	let preferSemanticMarkup = $state(false);
+
+	const blockedExecCommands = new Set([
+		'forecolor',
+		'fontname',
+		'fontsize',
+		'backcolor',
+		'hilitecolor'
+	]);
 
 	onMount(async () => {
-		await tick(); // Ensure DOM is ready
-		if (editorRef && content) {
-			editorRef.innerHTML = content;
-		}
+		await tick();
 		initialized = true;
 	});
 
 	// Sync prop changes to editor (but not during user editing and after init)
 	$effect(() => {
-		if (initialized && editorRef && !isUserEditing) {
-			// Only update if content is different from what's displayed
-			if (editorRef.innerHTML !== content) {
-				editorRef.innerHTML = content;
-			}
+		const html = typeof content === 'string' ? content : '';
+		if (!initialized || !editorRef || isUserEditing) return;
+
+		const cleaned = html ? sanitizeHtmlString(html) : '';
+		if (editorRef.innerHTML !== cleaned) {
+			editorRef.innerHTML = cleaned;
 		}
+		untrack(() => {
+			if (cleaned !== html && onchange) {
+				onchange(cleaned);
+			}
+		});
 	});
 
+	function sanitizeHtmlString(html: string): string {
+		const wrapper = document.createElement('div');
+		wrapper.innerHTML = html;
+		stripInlineStyles(wrapper);
+		return wrapper.innerHTML;
+	}
+
+	function unwrapFontElements(root: HTMLElement) {
+		const fonts = Array.from(root.getElementsByTagName('font'));
+		for (const font of fonts) {
+			const parent = font.parentNode;
+			if (!parent) continue;
+			while (font.firstChild) {
+				parent.insertBefore(font.firstChild, font);
+			}
+			parent.removeChild(font);
+		}
+	}
+
+	function unwrapAttributelessSpans(root: HTMLElement) {
+		for (let pass = 0; pass < 24; pass++) {
+			const bareSpans = Array.from(root.querySelectorAll('span')).filter(
+				(s) => s.attributes.length === 0
+			);
+			if (bareSpans.length === 0) break;
+			for (const span of bareSpans) {
+				const parent = span.parentNode;
+				if (!parent) continue;
+				while (span.firstChild) {
+					parent.insertBefore(span.firstChild, span);
+				}
+				parent.removeChild(span);
+			}
+		}
+	}
+
+	/** Keep in sync with `src/lib/server/sanitizeRichHtml.ts` (batch cleanup script). */
+	function stripInlineStyles(root: HTMLElement) {
+		unwrapFontElements(root);
+		const elements = root.querySelectorAll<HTMLElement>('*');
+		for (const el of elements) {
+			el.removeAttribute('style');
+			el.removeAttribute('class');
+			el.removeAttribute('color');
+			el.removeAttribute('bgcolor');
+			el.removeAttribute('face');
+			el.removeAttribute('size');
+			el.removeAttribute('align');
+		}
+		unwrapAttributelessSpans(root);
+	}
+
 	function execCommand(command: string, value?: string) {
+		const normalized = command.toLowerCase();
+		if (blockedExecCommands.has(normalized)) {
+			return;
+		}
 		document.execCommand(command, false, value);
 		editorRef?.focus();
 		handleInput();
 	}
 
 	function handleInput() {
+		if (editorRef) {
+			stripInlineStyles(editorRef);
+		}
+
 		if (onchange && editorRef) {
 			onchange(editorRef.innerHTML);
 		}
 	}
 
+	function handlePaste() {
+		if (!editorRef) return;
+		setTimeout(() => {
+			if (!editorRef) return;
+			stripInlineStyles(editorRef);
+			handleInput();
+		}, 0);
+	}
+
 	function handleFocus() {
+		if (!preferSemanticMarkup && editorRef) {
+			try {
+				document.execCommand('styleWithCSS', false, 'false');
+			} catch {
+				// unsupported
+			}
+			preferSemanticMarkup = true;
+		}
 		isFocused = true;
 		isUserEditing = true;
 	}
@@ -171,7 +262,7 @@
 	}
 </script>
 
-<div class="richTextEditor" class:focused={isFocused}>
+<div class="richTextEditor" class:focused={isFocused} class:forceWhiteText={forceWhiteText}>
 	<div class="toolbar">
 		<div class="toolbarGroup">
 			<button type="button" onclick={() => insertHeading(2)} title="Heading 2" class="toolbarBtn">
@@ -269,6 +360,7 @@
 		onkeydown={handleKeyDown}
 		onfocus={handleFocus}
 		onblur={handleBlur}
+		onpaste={handlePaste}
 		data-placeholder={placeholder}
 		role="textbox"
 		tabindex="0"
@@ -383,5 +475,10 @@
 	.editorContent :global(a) {
 		color: var(--primaryColor);
 		text-decoration: underline;
+	}
+
+	.richTextEditor.forceWhiteText .editorContent,
+	.richTextEditor.forceWhiteText .editorContent :global(*) {
+		color: #fff !important;
 	}
 </style>

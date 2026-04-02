@@ -44,9 +44,15 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 
 		const kid = await createKid({
 			name: data.name,
+			nickname:
+				typeof data.nickname === 'string' ? data.nickname.trim() || null : data.nickname ?? null,
+			tagline: data.tagline,
 			birthday: data.birthday ? new Date(data.birthday) : undefined,
 			gender: data.gender,
 			image: data.image,
+			description: data.description,
+			featuredImage: data.featuredImage,
+			images: Array.isArray(data.images) ? data.images : [],
 			sponsorIds: data.sponsorIds || []
 		});
 
