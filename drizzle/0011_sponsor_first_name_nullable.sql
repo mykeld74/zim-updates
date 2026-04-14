@@ -1,0 +1,1 @@
+ALTER TABLE "sponsor" ALTER COLUMN "firstName" DROP NOT NULL;

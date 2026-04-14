@@ -1,17 +1,25 @@
 <script lang="ts">
-	import { signUp } from '$lib/auth-client';
-	import { getEmailVerificationCallbackUrl } from '$lib/emailVerification';
-	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	let name = $state('');
 	let email = $state('');
 	let password = $state('');
 	let confirmPassword = $state('');
 	let error = $state('');
+	let success = $state('');
 	let loading = $state(false);
+
+	onMount(() => {
+		const message = new URLSearchParams(window.location.search).get('message');
+		if (message === 'link') {
+			error =
+				'We could not find a sponsor profile linked to your login yet. Create an account here with the same email you use for sponsorship, or sign in after verifying your email.';
+		}
+	});
 
 	async function handleSignup() {
 		error = '';
+		success = '';
 
 		if (password !== confirmPassword) {
 			error = 'Passwords do not match';
@@ -24,21 +32,26 @@
 		}
 
 		loading = true;
-
 		try {
-			const result = await signUp.email({
-				email,
-				password,
-				name,
-				callbackURL: getEmailVerificationCallbackUrl()
+			const response = await fetch('/api/sponsor/register', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ name, email, password })
 			});
-
-			if (result.error) {
-				error = result.error.message || 'Signup failed';
+			const result = await response.json().catch(() => ({}));
+			if (!response.ok) {
+				error = typeof result.error === 'string' ? result.error : 'Signup failed';
 			} else {
-				goto('/login?message=verify-staff');
+				success =
+					typeof result.message === 'string'
+						? result.message
+						: 'Check your email to verify your account.';
+				name = '';
+				email = '';
+				password = '';
+				confirmPassword = '';
 			}
-		} catch (err) {
+		} catch {
 			error = 'An unexpected error occurred';
 		} finally {
 			loading = false;
@@ -47,19 +60,17 @@
 </script>
 
 <svelte:head>
-	<title>Staff signup — Zimbabwe Updates</title>
-	<meta name="description" content="Request access to the Zimbabwe Updates admin site." />
+	<title>Sponsor account — Zimbabwe Updates</title>
+	<meta name="description" content="Create an account to view the children you sponsor." />
 	<meta name="robots" content="noindex, nofollow" />
 </svelte:head>
 
 <div class="signupContainer">
 	<div class="signupCard">
-		<h1>Staff signup</h1>
+		<h1>Sponsor account</h1>
 		<p class="subtitle">
-			Request access to the admin site. Once you verify your email, your account is active. Sponsors should
-			use
-			<a href="/sponsor/signup">sponsor signup</a>
-			instead.
+			Use the <strong>same email address</strong> we have on file for your sponsorship. After you verify
+			your email, we will connect your sponsored children to this account.
 		</p>
 
 		<form
@@ -77,6 +88,7 @@
 					required
 					placeholder="Your name"
 					disabled={loading}
+					autocomplete="name"
 				/>
 			</div>
 
@@ -87,8 +99,9 @@
 					type="email"
 					bind:value={email}
 					required
-					placeholder="your@email.com"
+					placeholder="you@example.com"
 					disabled={loading}
+					autocomplete="email"
 				/>
 			</div>
 
@@ -99,13 +112,15 @@
 					type="password"
 					bind:value={password}
 					required
+					minlength="8"
 					placeholder="At least 8 characters"
 					disabled={loading}
+					autocomplete="new-password"
 				/>
 			</div>
 
 			<div class="formGroup">
-				<label for="confirmPassword">Confirm Password</label>
+				<label for="confirmPassword">Confirm password</label>
 				<input
 					id="confirmPassword"
 					type="password"
@@ -113,20 +128,28 @@
 					required
 					placeholder="Re-enter your password"
 					disabled={loading}
+					autocomplete="new-password"
 				/>
 			</div>
 
+			{#if success}
+				<div class="success" role="status">{success}</div>
+			{/if}
 			{#if error}
 				<div class="error" role="alert">{error}</div>
 			{/if}
 
 			<button type="submit" disabled={loading} class="signupButton">
-				{loading ? 'Creating account...' : 'Create Account'}
+				{loading ? 'Creating account...' : 'Create sponsor account'}
 			</button>
 		</form>
 
 		<p class="loginLink">
 			Already have an account? <a href="/login">Sign in</a>
+		</p>
+		<p class="staffNote">
+			Team member needing the admin site?
+			<a href="/signup">Staff signup</a>
 		</p>
 	</div>
 </div>
@@ -146,7 +169,7 @@
 		border-radius: var(--radius-lg);
 		box-shadow: var(--shadow-md);
 		width: 100%;
-		max-width: 400px;
+		max-width: 440px;
 		animation: cardsIn var(--transition-base);
 	}
 
@@ -160,17 +183,8 @@
 		text-align: center;
 		color: var(--textMuted);
 		margin-bottom: var(--spacing-xl);
+		font-size: 0.9375rem;
 		line-height: 1.5;
-	}
-
-	.subtitle a {
-		color: var(--primaryColor);
-		font-weight: 600;
-		text-decoration: none;
-	}
-
-	.subtitle a:hover {
-		text-decoration: underline;
 	}
 
 	.formGroup {
@@ -237,19 +251,36 @@
 		border: 1px solid oklch(0.8 0.08 20);
 	}
 
-	.loginLink {
+	.success {
+		background: oklch(0.95 0.08 145);
+		color: oklch(0.35 0.12 145);
+		padding: var(--spacing-md);
+		border-radius: var(--radius-md);
+		margin-bottom: var(--spacing-lg);
+		border: 1px solid oklch(0.85 0.1 145);
+	}
+
+	.loginLink,
+	.staffNote {
 		text-align: center;
 		margin-top: var(--spacing-lg);
 		color: var(--textMuted);
+		font-size: 0.9375rem;
 	}
 
-	.loginLink a {
+	.staffNote {
+		margin-top: var(--spacing-md);
+	}
+
+	.loginLink a,
+	.staffNote a {
 		color: var(--primaryColor);
 		text-decoration: none;
 		font-weight: 600;
 	}
 
-	.loginLink a:hover {
+	.loginLink a:hover,
+	.staffNote a:hover {
 		text-decoration: underline;
 	}
 </style>

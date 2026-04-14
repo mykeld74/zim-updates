@@ -16,7 +16,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		where: eq(userTable.id, locals.user.id)
 	});
 
-	if (!currentUser?.approved) {
+	if (!currentUser || currentUser.role !== 'admin') {
 		throw redirect(303, '/login?message=pending');
 	}
 

@@ -5,6 +5,9 @@
 	import { Nav } from '$lib';
 
 	let { children, data } = $props();
+
+	const hasSponsorAccount = $derived(data.hasSponsorAccount ?? false);
+	const isApprovedStaff = $derived(data.user?.role === 'admin');
 </script>
 
 <svelte:head>
@@ -17,7 +20,7 @@
 </svelte:head>
 
 <div class="appLayout">
-	<Nav />
+	<Nav {hasSponsorAccount} {isApprovedStaff} />
 	<main class="mainContent">
 		{@render children?.()}
 	</main>

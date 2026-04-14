@@ -20,8 +20,8 @@ async function requireApprovedUser(locals: App.Locals) {
 		where: eq(userTable.id, locals.user.id)
 	});
 
-	if (!currentUser?.approved) {
-		throw error(403, 'Forbidden: Account not approved');
+	if (!currentUser || currentUser.role !== 'admin') {
+		throw error(403, 'Forbidden: Account not authorized');
 	}
 
 	return currentUser;

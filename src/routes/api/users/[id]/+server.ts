@@ -1,10 +1,10 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { db } from '$lib/server/db';
-import { user as userTable } from '$lib/server/db/schema';
+import { account, session, user as userTable } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
-export const PATCH: RequestHandler = async ({ params, request, locals }) => {
+async function requireAuthorizedAdmin(locals: App.Locals) {
 	// Check if user is authenticated
 	if (!locals.user) {
 		throw error(401, 'Unauthorized');
@@ -15,10 +15,13 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 		where: eq(userTable.id, locals.user.id)
 	});
 
-	if (!currentUser?.approved) {
-		throw error(403, 'Forbidden: Account not approved');
+	if (!currentUser || currentUser.role !== 'admin') {
+		throw error(403, 'Forbidden: Account not authorized');
 	}
+}
 
+export const PATCH: RequestHandler = async ({ params, request, locals }) => {
+	await requireAuthorizedAdmin(locals);
 	const { id } = params;
 	const { approved } = await request.json();
 
@@ -41,6 +44,28 @@ export const PATCH: RequestHandler = async ({ params, request, locals }) => {
 	} catch (err) {
 		console.error('Error updating user:', err);
 		throw error(500, 'Failed to update user');
+	}
+};
+
+export const DELETE: RequestHandler = async ({ params, locals }) => {
+	await requireAuthorizedAdmin(locals);
+
+	const { id } = params;
+	if (id === locals.user?.id) {
+		throw error(400, 'You cannot delete your own account');
+	}
+
+	try {
+		await db.delete(session).where(eq(session.userId, id));
+		await db.delete(account).where(eq(account.userId, id));
+		const deletedUsers = await db.delete(userTable).where(eq(userTable.id, id)).returning({ id: userTable.id });
+		if (deletedUsers.length === 0) {
+			throw error(404, 'User not found');
+		}
+		return json({ success: true });
+	} catch (err) {
+		console.error('Error deleting user:', err);
+		throw error(500, 'Failed to delete user');
 	}
 };
 

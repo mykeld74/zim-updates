@@ -5,9 +5,10 @@ import { generateId } from '$lib/utils';
 
 export interface Sponsor {
 	id: string;
-	firstName: string;
+	userId?: string | null;
+	firstName: string | null;
 	lastName: string;
-	phoneNumber: string;
+	phoneNumber: string | null;
 	email: string;
 	sponsorshipType: string;
 	subscribed: boolean;
@@ -42,7 +43,7 @@ export interface KidWithSponsors extends Kid {
 
 // Type for partial sponsor updates
 interface SponsorUpdateData {
-	firstName?: string;
+	firstName?: string | null;
 	lastName?: string;
 	phoneNumber?: string;
 	email?: string;
@@ -69,9 +70,10 @@ interface KidUpdateData {
 
 // Sponsor CRUD operations
 export async function createSponsor(data: {
-	firstName: string;
+	firstName?: string | null;
 	lastName: string;
-	phoneNumber: string;
+	phoneNumber?: string | null;
+	userId?: string | null;
 	email: string;
 	sponsorshipType?: string;
 	subscribed?: boolean;
@@ -83,9 +85,10 @@ export async function createSponsor(data: {
 	// Create sponsor
 	await db.insert(sponsor).values({
 		id: sponsorId,
-		firstName: data.firstName,
+		userId: data.userId ?? null,
+		firstName: data.firstName ?? null,
 		lastName: data.lastName,
-		phoneNumber: data.phoneNumber,
+		phoneNumber: data.phoneNumber ?? null,
 		email: data.email,
 		sponsorshipType: data.sponsorshipType || 'individual',
 		subscribed: data.subscribed ?? true,

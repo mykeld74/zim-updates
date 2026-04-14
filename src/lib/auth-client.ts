@@ -5,4 +5,4 @@ export const authClient = createAuthClient({
 	baseURL: browser ? window.location.origin : 'http://localhost:5173'
 });
 
-export const { signIn, signUp, signOut, useSession } = authClient;
+export const { signIn, signUp, signOut, useSession, sendVerificationEmail, getSession } = authClient;

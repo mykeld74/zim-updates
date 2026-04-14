@@ -71,6 +71,13 @@
       "when": 1775299200000,
       "tag": "0009_kid_nickname",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1775164594292,
+      "tag": "0010_sponsor_portal",
+      "breakpoints": true
     }
   ]
 }

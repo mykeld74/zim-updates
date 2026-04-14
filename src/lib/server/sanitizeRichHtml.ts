@@ -1,4 +1,4 @@
-import { load, type Element } from 'cheerio';
+import { load } from 'cheerio';
 
 /**
  * Strips inline styles and presentation attributes so markup relies on semantic
@@ -31,7 +31,7 @@ export function sanitizeRichHtml(html: string): string {
 
 	for (let pass = 0; pass < 24; pass++) {
 		const bareSpans = $('span').filter((_, el) => {
-			const attribs = (el as Element).attribs;
+			const attribs = (el as { attribs?: Record<string, string> }).attribs;
 			return !attribs || Object.keys(attribs).length === 0;
 		});
 		if (bareSpans.length === 0) break;

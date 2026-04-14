@@ -54,7 +54,7 @@
 		formData = {
 			firstName: sponsor.firstName,
 			lastName: sponsor.lastName,
-			phoneNumber: sponsor.phoneNumber,
+			phoneNumber: sponsor.phoneNumber ?? '',
 			email: sponsor.email,
 			sponsorshipType: sponsor.sponsorshipType,
 			subscribed: sponsor.subscribed,
@@ -161,8 +161,8 @@
 					bValue = b.email.toLowerCase();
 					break;
 				case 'phone':
-					aValue = a.phoneNumber;
-					bValue = b.phoneNumber;
+					aValue = a.phoneNumber ?? '';
+					bValue = b.phoneNumber ?? '';
 					break;
 				case 'kids':
 					aValue = a.kids.length;
@@ -268,7 +268,7 @@
 									<span class="sponsorshipType">{sponsor.sponsorshipType}</span>
 								</td>
 								<td class="emailCell">{sponsor.email}</td>
-								<td class="phoneCell">{sponsor.phoneNumber}</td>
+								<td class="phoneCell">{sponsor.phoneNumber ?? '—'}</td>
 								<td class="subscribedCell">
 									<span class="subscribedBadge" class:subscribed={sponsor.subscribed}>
 										{sponsor.subscribed ? 'Yes' : 'No'}

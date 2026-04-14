@@ -6,8 +6,11 @@ export const user = pgTable('user', {
 	id: text('id').primaryKey(),
 	name: text('name').notNull(),
 	email: text('email').notNull().unique(),
+	role: text('role').notNull().default('sponsor'),
 	emailVerified: boolean('emailVerified').notNull().default(false),
 	approved: boolean('approved').notNull().default(false),
+	/** Set when registering via sponsor portal API; controls auto-create of sponsor row after verification. */
+	sponsorPortalSignup: boolean('sponsorPortalSignup').notNull().default(false),
 	image: text('image'),
 	createdAt: timestamp('createdAt').notNull(),
 	updatedAt: timestamp('updatedAt').notNull()
@@ -55,9 +58,10 @@ export const verification = pgTable('verification', {
 
 export const sponsor = pgTable('sponsor', {
 	id: text('id').primaryKey(),
-	firstName: text('firstName').notNull(),
+	userId: text('userId').unique().references(() => user.id, { onDelete: 'set null' }),
+	firstName: text('firstName'),
 	lastName: text('lastName').notNull(),
-	phoneNumber: text('phoneNumber').notNull(),
+	phoneNumber: text('phoneNumber'),
 	email: text('email').notNull(),
 	sponsorshipType: text('sponsorshipType').notNull().default('individual'),
 	subscribed: boolean('subscribed').notNull().default(true),

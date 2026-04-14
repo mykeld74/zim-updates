@@ -1,12 +1,52 @@
 <script lang="ts">
+	import { resolveRoute } from '$app/paths';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import gsap from 'gsap';
-	import { useSession } from '$lib';
+	import { signOut, useSession } from '$lib';
+
+	interface Props {
+		isApprovedStaff?: boolean;
+	}
+
+let { isApprovedStaff = false }: Props = $props();
 
 	const currentPath = $derived($page.url.pathname);
 	const session = useSession();
 	const isLoggedIn = $derived(!!$session?.data?.user);
+	let mobileMenuOpen = $state(false);
+	let accountMenuOpen = $state(false);
+
+	const navLinkItems = $derived.by(() => {
+		const links = [
+			{ href: resolveRoute('/'), label: 'Home', active: currentPath === '/' },
+			{ href: resolveRoute('/updates'), label: 'Updates', active: currentPath === '/updates' },
+			{
+				href: resolveRoute('/prayer-sponsor'),
+				label: 'Become a Prayer Sponsor',
+				active: currentPath === '/prayer-sponsor'
+			}
+		];
+
+		if (isLoggedIn) {
+			links.push({
+				href: resolveRoute('/sponsor'),
+				label: 'My sponsorship',
+				active: currentPath.startsWith('/sponsor')
+			});
+		}
+
+		if (isLoggedIn && isApprovedStaff) {
+			links.push({
+				href: resolveRoute('/admin'),
+				label: 'Admin',
+				active: currentPath.startsWith('/admin')
+			});
+		}
+
+		return links;
+	});
 
 	onMount(() => {
 		gsap.from('.navItem', {
@@ -17,27 +57,115 @@
 			ease: 'power2.out'
 		});
 	});
+
+	async function handleLogout() {
+		await signOut();
+		accountMenuOpen = false;
+		await goto(resolveRoute('/'));
+	}
 </script>
 
 <nav class="nav" aria-label="Main navigation">
-	<ul class="navList">
-		<li class="navItem">
-			<a href="/" class="navLink" class:active={currentPath === '/'}> Home </a>
-		</li>
-		<li class="navItem">
-			<a href="/updates" class="navLink" class:active={currentPath === '/updates'}> Updates </a>
-		</li>
-		<li class="navItem">
-			<a href="/prayer-sponsor" class="navLink" class:active={currentPath === '/prayer-sponsor'}>
-				Prayer Sponsor
-			</a>
-		</li>
-		{#if isLoggedIn}
-			<li class="navItem">
-				<a href="/admin" class="navLink" class:active={currentPath === '/admin'}> Admin </a>
-			</li>
-		{/if}
-	</ul>
+	<div class="navInner">
+		<ul class="navList desktopOnly">
+			{#each navLinkItems as link (link.href)}
+				<li class="navItem">
+					<a href={link.href} class="navLink" class:active={link.active}>{link.label}</a>
+				</li>
+			{/each}
+		</ul>
+
+		<div class="accountMenu desktopOnly">
+			<button
+				type="button"
+				class="accountButton"
+				aria-label="Open account menu"
+				aria-expanded={accountMenuOpen}
+				aria-controls="desktopAccountMenu"
+				onclick={() => (accountMenuOpen = !accountMenuOpen)}
+			>
+				<svg viewBox="0 0 24 24" aria-hidden="true" class="accountIcon">
+					<path
+						d="M12 12.75A5.25 5.25 0 1 0 12 2.25a5.25 5.25 0 0 0 0 10.5Zm0 1.5c-4.556 0-8.25 2.742-8.25 6.125 0 .345.28.625.625.625h15.25a.625.625 0 0 0 .625-.625c0-3.383-3.694-6.125-8.25-6.125Z"
+					></path>
+				</svg>
+			</button>
+			{#if accountMenuOpen}
+				<div id="desktopAccountMenu" class="accountDropdown">
+					{#if isLoggedIn}
+						<button type="button" class="accountMenuAction" onclick={handleLogout}>Log out</button>
+					{:else}
+						<a
+							href={resolveRoute('/login')}
+							class="accountMenuAction"
+							onclick={() => (accountMenuOpen = false)}
+						>
+							Log in
+						</a>
+					{/if}
+				</div>
+			{/if}
+		</div>
+
+		<div class="mobileOnly mobileNav">
+			<button
+				type="button"
+				class="menuButton"
+				aria-expanded={mobileMenuOpen}
+				aria-controls="mobileNavMenu"
+				aria-label="Toggle navigation menu"
+				onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
+			>
+				<span class="menuButtonLine"></span>
+				<span class="menuButtonLine"></span>
+				<span class="menuButtonLine"></span>
+			</button>
+		</div>
+	</div>
+
+	{#if mobileMenuOpen}
+		<div id="mobileNavMenu" class="mobileMenu mobileOnly">
+			<ul class="mobileMenuList">
+				{#each navLinkItems as link (link.href)}
+					<li class="navItem">
+						<a
+							href={link.href}
+							class="navLink"
+							class:active={link.active}
+							onclick={() => (mobileMenuOpen = false)}
+						>
+							{link.label}
+						</a>
+					</li>
+				{/each}
+				{#if isLoggedIn}
+					<li class="navItem">
+						<button
+							type="button"
+							class="navLink mobileAuthAction"
+							onclick={() => {
+								mobileMenuOpen = false;
+								handleLogout();
+							}}
+						>
+							Log out
+						</button>
+					</li>
+				{:else}
+					<li class="navItem">
+						<a
+							href={resolveRoute('/login')}
+							class="navLink"
+							class:active={currentPath === '/login'}
+							onclick={() => (mobileMenuOpen = false)}
+						>
+							Log in
+						</a>
+					</li>
+				{/if}
+			</ul>
+		</div>
+	{/if}
 </nav>
 
 <style>
@@ -54,14 +182,22 @@
 		box-shadow: var(--shadow-sm);
 	}
 
+	.navInner {
+		max-width: 1200px;
+		margin: 0 auto;
+		display: grid;
+		grid-template-columns: 1fr auto;
+		align-items: center;
+		gap: var(--spacing-md);
+	}
+
 	.navList {
 		display: flex;
 		gap: var(--spacing-lg);
 		list-style: none;
 		margin: 0;
 		padding: 0;
-		max-width: 1200px;
-		margin: 0 auto;
+		align-items: center;
 	}
 
 	.navItem {
@@ -96,18 +232,131 @@
 		outline-offset: 2px;
 	}
 
+	.desktopOnly {
+		display: inline-flex;
+	}
+
+	.mobileOnly {
+		display: none;
+	}
+
+	.mobileMenu {
+		margin-top: var(--spacing-sm);
+		border-top: 1px solid var(--borderColor);
+		padding-top: var(--spacing-sm);
+	}
+
+	.mobileMenuList {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: var(--spacing-xs);
+	}
+
+	.mobileNav {
+		justify-self: end;
+	}
+
+	.menuButton {
+		border: 1px solid var(--borderColor);
+		background: var(--surfaceColor);
+		border-radius: var(--radius-md);
+		padding: 0.45rem;
+		display: grid;
+		gap: 0.2rem;
+		cursor: pointer;
+	}
+
+	.menuButtonLine {
+		width: 1rem;
+		height: 2px;
+		background: var(--textColor);
+		display: block;
+	}
+
+	.accountMenu {
+		position: relative;
+		justify-self: end;
+	}
+
+	.accountButton {
+		border: 1px solid var(--borderColor);
+		background: var(--surfaceColor);
+		color: var(--textColor);
+		border-radius: 999px;
+		padding: 0.35rem;
+		width: 2.1rem;
+		height: 2.1rem;
+		display: grid;
+		place-items: center;
+		cursor: pointer;
+	}
+
+	.accountButton:hover {
+		background: oklch(from var(--primaryColor) l c h / 0.1);
+		color: var(--primaryColor);
+	}
+
+	.accountIcon {
+		width: 1.1rem;
+		height: 1.1rem;
+		fill: currentColor;
+	}
+
+	.accountDropdown {
+		position: absolute;
+		top: calc(100% + 0.45rem);
+		right: 0;
+		background: var(--surfaceColor);
+		border: 1px solid var(--borderColor);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-sm);
+		padding: 0.35rem;
+		min-width: 8rem;
+		z-index: 10;
+	}
+
+	.accountMenuAction {
+		display: block;
+		width: 100%;
+		text-align: left;
+		text-decoration: none;
+		background: transparent;
+		border: none;
+		color: var(--textColor);
+		border-radius: var(--radius-sm);
+		padding: 0.45rem 0.55rem;
+		font-size: 0.9rem;
+		cursor: pointer;
+	}
+
+	.accountMenuAction:hover {
+		background: oklch(from var(--primaryColor) l c h / 0.1);
+		color: var(--primaryColor);
+	}
+
+	.mobileAuthAction {
+		width: 100%;
+		text-align: left;
+	}
+
 	@media (max-width: 768px) {
 		.nav {
 			padding: var(--spacing-sm) var(--spacing-md);
 		}
 
-		.navList {
-			gap: var(--spacing-md);
-		}
-
 		.navLink {
 			font-size: 0.875rem;
 			padding: var(--spacing-xs) var(--spacing-sm);
+		}
+
+		.desktopOnly {
+			display: none;
+		}
+
+		.mobileOnly {
+			display: block;
 		}
 	}
 </style>
