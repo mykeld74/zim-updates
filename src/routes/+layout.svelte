@@ -3,11 +3,36 @@
 	import '$lib/css/reset.css';
 	import '$lib/css/styles.css';
 	import { Nav } from '$lib';
+	import { onMount } from 'svelte';
 
 	let { children, data } = $props();
+	type Theme = 'light' | 'dark';
+	const themeStorageKey = 'zimTheme';
 
-	const hasSponsorAccount = $derived(data.hasSponsorAccount ?? false);
 	const isApprovedStaff = $derived(data.user?.role === 'admin');
+	let theme = $state<Theme>('light');
+
+	function applyTheme(nextTheme: Theme) {
+		theme = nextTheme;
+		if (typeof document === 'undefined') return;
+		document.documentElement.dataset.theme = nextTheme;
+		localStorage.setItem(themeStorageKey, nextTheme);
+	}
+
+	function toggleTheme() {
+		applyTheme(theme === 'light' ? 'dark' : 'light');
+	}
+
+	onMount(() => {
+		const savedTheme = localStorage.getItem(themeStorageKey);
+		if (savedTheme === 'light' || savedTheme === 'dark') {
+			applyTheme(savedTheme);
+			return;
+		}
+
+		const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+		applyTheme(prefersDark ? 'dark' : 'light');
+	});
 </script>
 
 <svelte:head>
@@ -20,7 +45,7 @@
 </svelte:head>
 
 <div class="appLayout">
-	<Nav {hasSponsorAccount} {isApprovedStaff} />
+	<Nav {isApprovedStaff} {theme} onThemeToggle={toggleTheme} />
 	<main class="mainContent">
 		{@render children?.()}
 	</main>

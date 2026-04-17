@@ -8,9 +8,15 @@
 
 	interface Props {
 		isApprovedStaff?: boolean;
+		theme?: 'light' | 'dark';
+		onThemeToggle?: () => void;
 	}
 
-let { isApprovedStaff = false }: Props = $props();
+	let {
+		isApprovedStaff = false,
+		theme = 'light',
+		onThemeToggle
+	}: Props = $props();
 
 	const currentPath = $derived($page.url.pathname);
 	const session = useSession();
@@ -78,6 +84,33 @@ let { isApprovedStaff = false }: Props = $props();
 		<div class="accountMenu desktopOnly">
 			<button
 				type="button"
+				class="themeToggleButton"
+				aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+				title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+				onclick={() => onThemeToggle?.()}
+			>
+				{#if theme === 'light'}
+					<svg viewBox="0 0 24 24" aria-hidden="true" class="themeIcon">
+						<path
+							d="M21 12.79A9 9 0 0 1 11.21 3A7.5 7.5 0 1 0 21 12.79Z"
+							fill="currentColor"
+						></path>
+					</svg>
+				{:else}
+					<svg viewBox="0 0 24 24" aria-hidden="true" class="themeIcon">
+						<circle cx="12" cy="12" r="4" fill="currentColor"></circle>
+						<path
+							d="M12 2v2.2M12 19.8V22M4.22 4.22l1.56 1.56M18.22 18.22l1.56 1.56M2 12h2.2M19.8 12H22M4.22 19.78l1.56-1.56M18.22 5.78l1.56-1.56"
+							stroke="currentColor"
+							stroke-width="1.8"
+							stroke-linecap="round"
+							fill="none"
+						></path>
+					</svg>
+				{/if}
+			</button>
+			<button
+				type="button"
 				class="accountButton"
 				aria-label="Open account menu"
 				aria-expanded={accountMenuOpen}
@@ -140,6 +173,29 @@ let { isApprovedStaff = false }: Props = $props();
 				{/each}
 				{#if isLoggedIn}
 					<li class="navItem">
+						<button type="button" class="navLink mobileAuthAction" onclick={() => onThemeToggle?.()}>
+							{#if theme === 'light'}
+								<svg viewBox="0 0 24 24" aria-hidden="true" class="themeIcon">
+									<path
+										d="M21 12.79A9 9 0 0 1 11.21 3A7.5 7.5 0 1 0 21 12.79Z"
+										fill="currentColor"
+									></path>
+								</svg>
+							{:else}
+								<svg viewBox="0 0 24 24" aria-hidden="true" class="themeIcon">
+									<circle cx="12" cy="12" r="4" fill="currentColor"></circle>
+									<path
+										d="M12 2v2.2M12 19.8V22M4.22 4.22l1.56 1.56M18.22 18.22l1.56 1.56M2 12h2.2M19.8 12H22M4.22 19.78l1.56-1.56M18.22 5.78l1.56-1.56"
+										stroke="currentColor"
+										stroke-width="1.8"
+										stroke-linecap="round"
+										fill="none"
+									></path>
+								</svg>
+							{/if}
+						</button>
+					</li>
+					<li class="navItem">
 						<button
 							type="button"
 							class="navLink mobileAuthAction"
@@ -152,6 +208,29 @@ let { isApprovedStaff = false }: Props = $props();
 						</button>
 					</li>
 				{:else}
+					<li class="navItem">
+						<button type="button" class="navLink mobileAuthAction" onclick={() => onThemeToggle?.()}>
+							{#if theme === 'light'}
+								<svg viewBox="0 0 24 24" aria-hidden="true" class="themeIcon">
+									<path
+										d="M21 12.79A9 9 0 0 1 11.21 3A7.5 7.5 0 1 0 21 12.79Z"
+										fill="currentColor"
+									></path>
+								</svg>
+							{:else}
+								<svg viewBox="0 0 24 24" aria-hidden="true" class="themeIcon">
+									<circle cx="12" cy="12" r="4" fill="currentColor"></circle>
+									<path
+										d="M12 2v2.2M12 19.8V22M4.22 4.22l1.56 1.56M18.22 18.22l1.56 1.56M2 12h2.2M19.8 12H22M4.22 19.78l1.56-1.56M18.22 5.78l1.56-1.56"
+										stroke="currentColor"
+										stroke-width="1.8"
+										stroke-linecap="round"
+										fill="none"
+									></path>
+								</svg>
+							{/if}
+						</button>
+					</li>
 					<li class="navItem">
 						<a
 							href={resolveRoute('/login')}
@@ -278,6 +357,31 @@ let { isApprovedStaff = false }: Props = $props();
 	.accountMenu {
 		position: relative;
 		justify-self: end;
+		display: inline-flex;
+		align-items: center;
+		gap: var(--spacing-sm);
+	}
+
+	.themeToggleButton {
+		border: 1px solid var(--borderColor);
+		background: var(--surfaceColor);
+		color: var(--textColor);
+		border-radius: 999px;
+		width: 2.1rem;
+		height: 2.1rem;
+		display: grid;
+		place-items: center;
+	}
+
+	.themeToggleButton:hover {
+		background: oklch(from var(--primaryColor) l c h / 0.1);
+		color: var(--primaryColor);
+	}
+
+	.themeIcon {
+		width: 1rem;
+		height: 1rem;
+		display: block;
 	}
 
 	.accountButton {

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolveRoute } from '$app/paths';
 	import { AdminImage, formatKidDisplayName } from '$lib';
-	import { slide } from 'svelte/transition';
+	import { fade, scale, slide } from 'svelte/transition';
 
 	const { data } = $props();
 	type KidProfile = (typeof data.kids)[number];
@@ -21,7 +21,7 @@
 			firstName: prefills.firstName,
 			lastName: prefills.lastName,
 			email: data.user?.email ?? '',
-			phoneNumber: '',
+			phoneNumber: data.matchedSponsorPhoneNumber ?? '',
 			password: '',
 			confirmPassword: '',
 			sponsorshipType: 'individual',
@@ -212,7 +212,22 @@
 
 		{#if !data.user}
 			<label>
-				Create Password
+				<span class="labelHeading">
+					Create Password
+					<span class="tooltipWrapper">
+						<button
+							type="button"
+							class="tooltipTrigger"
+							aria-label="Learn why to create an account"
+							aria-describedby="createPasswordTip"
+						>
+							?
+						</button>
+						<span id="createPasswordTip" role="tooltip" class="tooltipBubble">
+							By creating an account you can log in to view any updates
+						</span>
+					</span>
+				</span>
 				<input
 					type="password"
 					bind:value={formData.password}
@@ -328,11 +343,21 @@
 		aria-label="Close kid profile"
 		onclick={closeKidModal}
 		onkeydown={(event) => event.key === 'Escape' && closeKidModal()}
+		transition:fade={{ duration: 180 }}
 	></div>
-	<dialog class="kidModal" open>
+	<dialog class="kidModal" open transition:scale={{ duration: 220, start: 0.94 }}>
 		<div class="modalHeader">
 			<h2>{formatKidDisplayName(kid.name, kid.nickname)}</h2>
-			<button type="button" class="closeModalButton" onclick={closeKidModal}>Close</button>
+			<button
+				type="button"
+				class="closeModalButton"
+				aria-label="Close modal"
+				onclick={closeKidModal}
+			>
+				<svg viewBox="0 0 24 24" aria-hidden="true" class="closeIcon">
+					<path d="M6 6l12 12M18 6L6 18" />
+				</svg>
+			</button>
 		</div>
 
 		{#if kid.featuredImage || kid.image}
@@ -778,9 +803,26 @@
 	}
 
 	.closeModalButton {
-		background: transparent;
+		width: 2.6rem;
+		height: 2.6rem;
+		padding: 0;
+		display: grid;
+		place-items: center;
+		border-radius: 999px;
+		font-size: 1.2rem;
+		line-height: 1;
+		background: var(--surfaceColor);
 		color: var(--textColor);
-		border: 1px solid var(--borderColor);
+		border: 2px solid var(--borderColor);
+	}
+
+	.closeIcon {
+		width: 1.55rem;
+		height: 1.55rem;
+		stroke: currentColor;
+		stroke-width: 2.8;
+		stroke-linecap: round;
+		fill: none;
 	}
 
 	.chooseKidButton {

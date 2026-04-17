@@ -3,6 +3,7 @@
 :root {
 	/* Base hue for color scheme */
 	--hue: 240;
+	color-scheme: light;
 
 	/* Light mode colors - Modern Ocean Blue Scheme */
 	--primaryColor: oklch(0.55 0.18 var(--hue));
@@ -43,9 +44,34 @@
 	--shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.1);
 }
 
+/* Explicit theme override: light */
+:root[data-theme='light'] {
+	color-scheme: light;
+}
+
+/* Explicit theme override: dark */
+:root[data-theme='dark'] {
+	--primaryColor: oklch(0.65 0.2 240);
+	--secondaryColor: oklch(0.68 0.18 220);
+	--accentColor: oklch(0.72 0.18 200);
+	--contrastColor: oklch(0.12 0.02 240);
+	--backgroundColor: oklch(0.15 0.03 240);
+	--surfaceColor: oklch(0.2 0.04 240);
+	--textColor: oklch(0.95 0.01 240);
+	--textMuted: oklch(0.7 0.03 240);
+	--borderColor: oklch(0.3 0.04 240);
+	--errorColor: oklch(0.68 0.2 30);
+	--successColor: oklch(0.72 0.16 160);
+	--warningColor: oklch(0.75 0.16 80);
+	--shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.3);
+	--shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.4);
+	--shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.5);
+	color-scheme: dark;
+}
+
 /* Dark mode - Deep Ocean & Sky Blue */
 @media (prefers-color-scheme: dark) {
-	:root {
+	:root:not([data-theme]) {
 		--primaryColor: oklch(0.65 0.2 240);
 		--secondaryColor: oklch(0.68 0.18 220);
 		--accentColor: oklch(0.72 0.18 200);
@@ -62,6 +88,7 @@
 		--shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.3);
 		--shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.4);
 		--shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.5);
+		color-scheme: dark;
 	}
 }
 
