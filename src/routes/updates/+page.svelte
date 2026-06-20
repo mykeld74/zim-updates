@@ -33,7 +33,13 @@
 					<a href="/updates/{post.slug}" class="postLink">
 						{#if postImageSrc}
 							<div class="imageContainer">
-								<AdminImage source={postImageSrc} altTag={post.title} width="600" />
+								<AdminImage
+								source={postImageSrc}
+								altTag={post.title}
+								width="600"
+								aspectRatio="16:9"
+								faceCrop={true}
+							/>
 							</div>
 						{/if}
 

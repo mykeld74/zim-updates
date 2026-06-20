@@ -127,17 +127,35 @@
 			{#if posts.length > 0}
 				{@const featuredPost = posts[0] as UpdatePost}
 				{@const featuredImageSrc = featuredPost.featuredImage || featuredPost.featured_image}
-				<article class="featuredCard">
+				{@const featuredPortrait = data.portraitByPostId?.[featuredPost.id] ?? false}
+				<article class="featuredCard" class:portraitCard={featuredPortrait}>
 					<a class="featuredLink" href="/updates/{featuredPost.slug}">
-						{#if featuredImageSrc}
+						{#if featuredImageSrc && !featuredPortrait}
 							<div class="featuredMedia">
-								<AdminImage source={featuredImageSrc} altTag={featuredPost.title} width="960" />
+								<AdminImage
+									source={featuredImageSrc}
+									altTag={featuredPost.title}
+									width="960"
+									aspectRatio="16:9"
+									faceCrop={true}
+								/>
 							</div>
 						{/if}
 
 						<div class="featuredContent">
 							<span class="featuredBadge" aria-hidden="true">Latest Update</span>
 							<h3>{featuredPost.title}</h3>
+							{#if featuredImageSrc && featuredPortrait}
+								<div class="featuredPortrait">
+									<AdminImage
+										source={featuredImageSrc}
+										altTag={featuredPost.title}
+										width="120"
+										portrait={true}
+										faceZoom="0.75"
+									/>
+								</div>
+							{/if}
 							<p>{getExcerpt(featuredPost)}</p>
 							<div class="featuredMeta">
 								<span>{formatDate(featuredPost.createdAt || featuredPost.created_at)}</span>
@@ -151,16 +169,34 @@
 					<div class="recentGrid" role="list">
 						{#each recentPosts as post (post.id)}
 							{@const recentImageSrc = post.featuredImage || post.featured_image}
-							<article class="recentCard" role="listitem">
+							{@const recentPortrait = data.portraitByPostId?.[post.id] ?? false}
+							<article class="recentCard" class:portraitCard={recentPortrait} role="listitem">
 								<a class="recentLink" href="/updates/{post.slug}">
-									{#if recentImageSrc}
+									{#if recentImageSrc && !recentPortrait}
 										<div class="recentMedia">
-											<AdminImage source={recentImageSrc} altTag={post.title} width="480" />
+											<AdminImage
+												source={recentImageSrc}
+												altTag={post.title}
+												width="480"
+												aspectRatio="16:9"
+												faceCrop={true}
+											/>
 										</div>
 									{/if}
 
 									<div class="recentContent">
 										<h4>{post.title}</h4>
+										{#if recentImageSrc && recentPortrait}
+											<div class="recentPortrait">
+												<AdminImage
+													source={recentImageSrc}
+													altTag={post.title}
+													width="120"
+													portrait={true}
+													faceZoom="0.75"
+												/>
+											</div>
+										{/if}
 										<p class="excerpt">{getExcerpt(post)}</p>
 										<div class="recentMeta">
 											<span>{formatDate(post.createdAt || post.created_at)}</span>
@@ -248,6 +284,10 @@
 		overflow: hidden;
 	}
 
+	.featuredCard.portraitCard {
+		grid-template-columns: 1fr;
+	}
+
 	.featuredLink {
 		display: contents;
 		color: inherit;
@@ -263,6 +303,16 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+	}
+
+	.featuredPortrait {
+		display: flex;
+		justify-content: center;
+	}
+
+	.featuredPortrait :global(img) {
+		width: 120px;
+		height: 120px;
 	}
 
 	.featuredContent {
@@ -342,6 +392,16 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+	}
+
+	.recentPortrait {
+		display: flex;
+		justify-content: center;
+	}
+
+	.recentPortrait :global(img) {
+		width: 120px;
+		height: 120px;
 	}
 
 	.recentContent {

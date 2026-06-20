@@ -120,7 +120,13 @@
 				<article class="updateCard">
 					<div class="updateImage">
 						{#if update.featuredImage}
-							<AdminImage source={update.featuredImage} altTag={update.title} width="200" />
+							<AdminImage
+								source={update.featuredImage}
+								altTag={update.title}
+								width="300"
+								aspectRatio="3:2"
+								faceCrop={true}
+							/>
 						{:else}
 							<div class="placeholderImage">
 								<span>📝</span>

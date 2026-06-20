@@ -231,7 +231,13 @@
 					<h3>Featured Image</h3>
 					{#if featuredImage && !showImageUpload}
 						<div class="imagePreview">
-							<AdminImage source={featuredImage} altTag="Featured image" width="300" />
+							<AdminImage
+								source={featuredImage}
+								altTag="Featured image"
+								width="300"
+								aspectRatio="16:9"
+								faceCrop={true}
+							/>
 							<button type="button" class="removeImageBtn" onclick={removeImage}>Remove</button>
 							<button
 								type="button"

@@ -14,8 +14,8 @@
 			: 'Read the latest update from our friends in Zimbabwe.'
 	);
 	const ogImage = $derived(
-		featuredImageSrc 
-			? `https://res.cloudinary.com/bigbeardeddev/image/upload/${featuredImageSrc}`
+		featuredImageSrc
+			? `https://res.cloudinary.com/bigbeardeddev/image/upload/f_auto,q_auto,c_fill,g_face,w_1200,h_675/${featuredImageSrc}`
 			: undefined
 	);
 	const pageUrl = $derived(`https://zim-updates.com/updates/${post.slug}`);
@@ -57,7 +57,13 @@
 
 	{#if featuredImageSrc}
 		<div class="featuredImage">
-			<AdminImage source={featuredImageSrc} altTag={post.title} width="1200" />
+			<AdminImage
+				source={featuredImageSrc}
+				altTag={post.title}
+				width="1200"
+				aspectRatio="16:9"
+				faceCrop={true}
+			/>
 		</div>
 	{/if}
 
