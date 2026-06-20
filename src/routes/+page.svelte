@@ -127,7 +127,7 @@
 			{#if posts.length > 0}
 				{@const featuredPost = posts[0] as UpdatePost}
 				{@const featuredImageSrc = featuredPost.featuredImage || featuredPost.featured_image}
-				{@const featuredPortrait = data.portraitByPostId?.[featuredPost.id] ?? false}
+				{@const featuredPortrait = featuredPost.featuredIsPortrait}
 				<article class="featuredCard" class:portraitCard={featuredPortrait}>
 					<a class="featuredLink" href="/updates/{featuredPost.slug}">
 						{#if featuredImageSrc && !featuredPortrait}
@@ -169,7 +169,7 @@
 					<div class="recentGrid" role="list">
 						{#each recentPosts as post (post.id)}
 							{@const recentImageSrc = post.featuredImage || post.featured_image}
-							{@const recentPortrait = data.portraitByPostId?.[post.id] ?? false}
+							{@const recentPortrait = post.featuredIsPortrait}
 							<article class="recentCard" class:portraitCard={recentPortrait} role="listitem">
 								<a class="recentLink" href="/updates/{post.slug}">
 									{#if recentImageSrc && !recentPortrait}

@@ -5,7 +5,9 @@
       "Bash(ls -la /Users/MichaelD/Developer/zim-updates/.env*)",
       "Bash(find node_modules -path */nanostores/package.json -maxdepth 4)",
       "Bash(grep -r \"sveltekit\\\\|svelte-kit\\\\|svelteKit\\\\|SvelteKit\\\\|toSvelte\" node_modules/better-auth/dist/ --include=*.mjs -l)",
-      "Bash(npx svelte-check:*)"
+      "Bash(npx svelte-check:*)",
+      "Bash(npm run *)",
+      "Bash(npx prettier *)"
     ]
   }
 }

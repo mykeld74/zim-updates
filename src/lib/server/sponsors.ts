@@ -170,10 +170,17 @@ export async function getAllSponsors(): Promise<SponsorWithKids[]> {
 		.from(sponsorKid)
 		.innerJoin(kid, eq(kid.id, sponsorKid.kidId));
 
-	// Map sponsors with their kids
+	// Group kids by sponsor in a single pass (avoids O(n*m) filtering per sponsor)
+	const kidsBySponsor = new Map<string, Kid[]>();
+	for (const r of relationships) {
+		const list = kidsBySponsor.get(r.sponsorId);
+		if (list) list.push(r.kid);
+		else kidsBySponsor.set(r.sponsorId, [r.kid]);
+	}
+
 	return sponsors.map((s) => ({
 		...s,
-		kids: relationships.filter((r) => r.sponsorId === s.id).map((r) => r.kid)
+		kids: kidsBySponsor.get(s.id) ?? []
 	}));
 }
 
@@ -325,10 +332,17 @@ export async function getAllKids(): Promise<KidWithSponsors[]> {
 		.from(sponsorKid)
 		.innerJoin(sponsor, eq(sponsor.id, sponsorKid.sponsorId));
 
-	// Map kids with their sponsors
+	// Group sponsors by kid in a single pass (avoids O(n*m) filtering per kid)
+	const sponsorsByKid = new Map<string, Sponsor[]>();
+	for (const r of relationships) {
+		const list = sponsorsByKid.get(r.kidId);
+		if (list) list.push(r.sponsor);
+		else sponsorsByKid.set(r.kidId, [r.sponsor]);
+	}
+
 	return kids.map((k) => ({
 		...k,
-		sponsors: relationships.filter((r) => r.kidId === k.id).map((r) => r.sponsor)
+		sponsors: sponsorsByKid.get(k.id) ?? []
 	}));
 }
 

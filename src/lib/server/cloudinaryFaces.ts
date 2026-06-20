@@ -36,23 +36,3 @@ export async function isSinglePortraitImage(source: string): Promise<boolean> {
 	const count = await getFaceCount(source);
 	return count === 1;
 }
-
-export async function getPortraitFlagsForPosts(
-	posts: Array<{ id: string; featuredImage?: string | null; featured_image?: string | null }>
-): Promise<Record<string, boolean>> {
-	const flags: Record<string, boolean> = {};
-
-	await Promise.all(
-		posts.map(async (post) => {
-			const source = post.featuredImage || post.featured_image;
-			if (!source) {
-				flags[post.id] = false;
-				return;
-			}
-
-			flags[post.id] = await isSinglePortraitImage(source);
-		})
-	);
-
-	return flags;
-}

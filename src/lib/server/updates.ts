@@ -2,6 +2,7 @@ import { db } from './db';
 import { update } from './db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { generateId } from '$lib/utils';
+import { isSinglePortraitImage } from './cloudinaryFaces';
 
 // ============================================================================
 // Types
@@ -30,6 +31,7 @@ export interface UpdatePost {
 	layout?: Block[] | null;
 	featuredImage?: string | null;
 	featured_image?: string | null; // Alias for compatibility
+	featuredIsPortrait: boolean;
 	author: string;
 	status: 'draft' | 'published';
 	createdAt: string;
@@ -86,6 +88,7 @@ function mapToUpdatePost(row: typeof update.$inferSelect): UpdatePost {
 		layout: row.layout as Block[] | null,
 		featuredImage: row.featuredImage,
 		featured_image: row.featuredImage, // Alias
+		featuredIsPortrait: row.featuredIsPortrait,
 		author: row.author,
 		status: row.status as 'draft' | 'published',
 		createdAt,
@@ -104,6 +107,10 @@ export async function createUpdate(data: CreateUpdateData): Promise<UpdatePost> 
 	const now = new Date();
 	const id = generateId();
 	const slug = data.slug || generateSlug(data.title);
+	// Compute the portrait flag once here so the public feed never has to hit Cloudinary at render time.
+	const featuredIsPortrait = data.featuredImage
+		? await isSinglePortraitImage(data.featuredImage)
+		: false;
 
 	const [inserted] = await db
 		.insert(update)
@@ -115,6 +122,7 @@ export async function createUpdate(data: CreateUpdateData): Promise<UpdatePost> 
 			content: data.content ?? null,
 			layout: data.layout ?? null,
 			featuredImage: data.featuredImage ?? null,
+			featuredIsPortrait,
 			author: data.author ?? 'Admin',
 			status: data.status ?? 'draft',
 			createdAt: now,
@@ -170,7 +178,13 @@ export async function updateUpdate(id: string, data: UpdateUpdateData): Promise<
 	if (data.excerpt !== undefined) updateData.excerpt = data.excerpt;
 	if (data.content !== undefined) updateData.content = data.content;
 	if (data.layout !== undefined) updateData.layout = data.layout;
-	if (data.featuredImage !== undefined) updateData.featuredImage = data.featuredImage;
+	if (data.featuredImage !== undefined) {
+		updateData.featuredImage = data.featuredImage;
+		// Recompute the cached portrait flag whenever the featured image changes.
+		updateData.featuredIsPortrait = data.featuredImage
+			? await isSinglePortraitImage(data.featuredImage)
+			: false;
+	}
 	if (data.author !== undefined) updateData.author = data.author;
 
 	// Handle status changes

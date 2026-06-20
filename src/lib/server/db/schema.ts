@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, primaryKey, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, primaryKey, jsonb, index } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import { relations } from 'drizzle-orm';
 
@@ -58,7 +58,9 @@ export const verification = pgTable('verification', {
 
 export const sponsor = pgTable('sponsor', {
 	id: text('id').primaryKey(),
-	userId: text('userId').unique().references(() => user.id, { onDelete: 'set null' }),
+	userId: text('userId')
+		.unique()
+		.references(() => user.id, { onDelete: 'set null' }),
 	firstName: text('firstName'),
 	lastName: text('lastName').notNull(),
 	phoneNumber: text('phoneNumber'),
@@ -79,7 +81,10 @@ export const kid = pgTable('kid', {
 	image: text('image'),
 	description: text('description'),
 	featuredImage: text('featuredImage'),
-	images: jsonb('images').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+	images: jsonb('images')
+		.$type<string[]>()
+		.notNull()
+		.default(sql`'[]'::jsonb`),
 	archived: boolean('archived').notNull().default(false),
 	archiveReason: text('archiveReason'),
 	createdAt: timestamp('createdAt').notNull(),
@@ -98,7 +103,10 @@ export const sponsorKid = pgTable(
 		createdAt: timestamp('createdAt').notNull()
 	},
 	(table) => ({
-		pk: primaryKey({ columns: [table.sponsorId, table.kidId] })
+		pk: primaryKey({ columns: [table.sponsorId, table.kidId] }),
+		// The composite PK indexes (sponsorId, kidId); add a standalone index so
+		// reverse lookups by kid (getKidById, updateKid, removeKidFromSponsor) are indexed too.
+		kidIdx: index('sponsorKid_kidId_idx').on(table.kidId)
 	})
 );
 
@@ -122,17 +130,26 @@ export const sponsorKidRelations = relations(sponsorKid, ({ one }) => ({
 }));
 
 // Updates/Posts table
-export const update = pgTable('update', {
-	id: text('id').primaryKey(),
-	title: text('title').notNull(),
-	slug: text('slug').notNull().unique(),
-	excerpt: text('excerpt'),
-	content: jsonb('content'), // Lexical rich text content
-	layout: jsonb('layout'), // Blocks array for block-based content
-	featuredImage: text('featuredImage'), // Cloudinary public ID
-	author: text('author').notNull().default('Admin'),
-	status: text('status').notNull().default('draft'), // 'draft' | 'published'
-	createdAt: timestamp('createdAt').notNull(),
-	updatedAt: timestamp('updatedAt').notNull(),
-	publishedAt: timestamp('publishedAt')
-});
+export const update = pgTable(
+	'update',
+	{
+		id: text('id').primaryKey(),
+		title: text('title').notNull(),
+		slug: text('slug').notNull().unique(),
+		excerpt: text('excerpt'),
+		content: jsonb('content'), // Lexical rich text content
+		layout: jsonb('layout'), // Blocks array for block-based content
+		featuredImage: text('featuredImage'), // Cloudinary public ID
+		/** Cached: featured image is a single-face portrait. Computed once on write, not per render. */
+		featuredIsPortrait: boolean('featuredIsPortrait').notNull().default(false),
+		author: text('author').notNull().default('Admin'),
+		status: text('status').notNull().default('draft'), // 'draft' | 'published'
+		createdAt: timestamp('createdAt').notNull(),
+		updatedAt: timestamp('updatedAt').notNull(),
+		publishedAt: timestamp('publishedAt')
+	},
+	(table) => ({
+		// Supports the hot published-feed query: where status='published' order by publishedAt desc.
+		publishedIdx: index('update_status_publishedAt_idx').on(table.status, table.publishedAt.desc())
+	})
+);

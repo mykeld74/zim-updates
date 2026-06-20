@@ -21,20 +21,27 @@ const guardHandler: Handle = async ({ event, resolve }) => {
 	event.locals.hasSponsorAccount = false;
 
 	if (sessionData?.user) {
-		const fullUserRows = await db.select().from(userTable).where(eq(userTable.id, sessionData.user.id)).limit(1);
-		const fullUser = fullUserRows[0];
+		// Single roundtrip: fetch the user and whether they have a linked sponsor row.
+		// The Neon HTTP driver issues one request per query, so the join avoids a second roundtrip.
+		const rows = await db
+			.select({ user: userTable, sponsorId: sponsorTable.id })
+			.from(userTable)
+			.leftJoin(sponsorTable, eq(sponsorTable.userId, userTable.id))
+			.where(eq(userTable.id, sessionData.user.id))
+			.limit(1);
+		const fullUser = rows[0]?.user;
 		if (fullUser) {
 			const normalizedEmail = fullUser.email.trim().toLowerCase();
-			const role = adminEmails.has(normalizedEmail) ? 'admin' : ((fullUser.role ?? 'sponsor') as 'admin' | 'sponsor');
+			const role = adminEmails.has(normalizedEmail)
+				? 'admin'
+				: ((fullUser.role ?? 'sponsor') as 'admin' | 'sponsor');
 			if (fullUser.role !== role) {
-				await db.update(userTable).set({ role, updatedAt: new Date() }).where(eq(userTable.id, fullUser.id));
+				await db
+					.update(userTable)
+					.set({ role, updatedAt: new Date() })
+					.where(eq(userTable.id, fullUser.id));
 			}
-			const sponsorRows = await db
-				.select({ id: sponsorTable.id })
-				.from(sponsorTable)
-				.where(eq(sponsorTable.userId, fullUser.id))
-				.limit(1);
-			event.locals.hasSponsorAccount = sponsorRows.length > 0;
+			event.locals.hasSponsorAccount = rows[0]?.sponsorId != null;
 			event.locals.user = {
 				...sessionData.user,
 				role,
